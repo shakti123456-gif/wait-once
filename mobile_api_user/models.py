@@ -51,7 +51,7 @@ class User_mobile(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=True)
-    #  is_admin = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=True)
     password=models.CharField(max_length=15)
 
     objects = UserManager()

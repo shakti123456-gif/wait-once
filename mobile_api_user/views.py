@@ -18,7 +18,6 @@ from .jwt_token import *
 
 
 def home(request):
-    print("asdasd",request.user)
     return render(request, 'home.html')
 
 
@@ -26,6 +25,12 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = User_mobile_serialize
     queryset = User_mobile.objects.all()
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response({"message": "You have successfully created a user"}, status=status.HTTP_201_CREATED, headers=headers)
     
 class update_user_data(APIView):
     
@@ -54,22 +59,15 @@ class Loginapi_views_jwt(APIView):
     serializer_class = LoginAPIView
 
     def post(self, request):
-        print(request.data)
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             user_name = serializer.validated_data['phonenumber']
             password = serializer.validated_data['password']
-            user_stat = User_mobile.objects.filter(mobile_number=user_name).first()
+            user_stat = User_mobile.objects.filter(mobile_number=user_name,password=password).first()
             if user_stat:
-                print(user_stat)
-                refresh = CustomRefreshToken.for_user(user_stat)
-                # access = CustomAccessToken.for_user(user_stat)
                 data = {
-                    # 'refresh': str(refresh),
-                    # 'access': str(access),
                     'user': User_mobile_serialize(user_stat).data
                 }
-
                 return Response({'message': data}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -103,8 +101,8 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
 
 
 class fetch_all_Service(generics.ListAPIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     serializer_class = ServiceSerializer
     
     def get_queryset(self):
