@@ -1,7 +1,4 @@
 from django.shortcuts import render
-
-from django.shortcuts import render
-
 # Create your views here.
 from django.shortcuts import render
 from rest_framework import generics, status 
@@ -12,9 +9,10 @@ from rest_framework.response import Response
 from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .Serializer import LoginAPIView ,User_mobile_serialize,ServiceSerializer
+from .Serializer import LoginAPIView ,User_mobile_serialize,ServiceSerializer,CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
+from rest_framework.permissions import AllowAny
 
 
 def home(request):
@@ -68,6 +66,7 @@ class Loginapi_views_jwt(APIView):
                 data = {
                     'user': User_mobile_serialize(user_stat).data
                 }
+
                 return Response({'message': data}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -108,5 +107,13 @@ class fetch_all_Service(generics.ListAPIView):
     def get_queryset(self):
         return Service.objects.all()
 
+class CustomLoginView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = CustomTokenObtainPairSerializer
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 

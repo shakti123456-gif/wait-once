@@ -25,14 +25,9 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, mobile_number, first_name, last_name, Dateofbirth, email_address=None, ndis_number=None, password=None):
+    def create_superuser(self, mobile_number,password=None):
         user = self.create_user(
             mobile_number,
-            first_name=first_name,
-            last_name=last_name,
-            Dateofbirth=Dateofbirth,
-            email_address=email_address,
-            ndis_number=ndis_number,
             password=password,
         )
         user.is_superuser = True
@@ -42,16 +37,16 @@ class UserManager(BaseUserManager):
 
 class User_mobile(AbstractBaseUser):
     user_id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100,null=True,blank=True)
+    last_name = models.CharField(max_length=100,null=True,blank=True)
     Dateofbirth = models.DateField(null=True, blank=True)
     mobile_number = models.CharField(max_length=15, unique=True)
     email_address = models.CharField(max_length=100, null=True, blank=True,unique=True)
     ndis_number = models.CharField(max_length=15, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
-    is_superuser = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=True)
+    is_superuser = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
     password=models.CharField(max_length=15)
 
     objects = UserManager()

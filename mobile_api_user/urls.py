@@ -11,6 +11,7 @@ urlpatterns = [
     path('user/loginjwt', Loginapi_views_jwt.as_view()),
     path('logout/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='auth_logout'),
     path('service/',fetch_all_Service.as_view(),name="service"),
+    path('check/',CustomLoginView.as_view(),name="check"),
 ]
 
 # urlpatterns = format_suffix_patterns(urlpatterns)

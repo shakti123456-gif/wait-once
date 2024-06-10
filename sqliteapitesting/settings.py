@@ -222,4 +222,6 @@ SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
 }
 AUTHENTICATION_BACKENDS = ['mobile_api_user.authentication_backends.userlogin']
-
+# AUTHENTICATION_BACKENDS = (
+#     'django.contrib.auth.backends.ModelBackend',
+# )
