@@ -12,7 +12,8 @@ class User_mobile_serialize(serializers.ModelSerializer):
     class Meta:
         model = User_mobile
         fields = ['first_name', 'last_name', 'Dateofbirth', 'mobile_number', 'email_address', 
-                  'ndis_number','password']
+                  'ndis_number','password', 'Language_perfered','Refferal_code'
+            ]
         
 class LoginAPIView(serializers.Serializer):
     phonenumber = serializers.CharField(max_length=200)

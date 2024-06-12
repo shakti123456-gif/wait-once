@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, mobile_number, first_name, last_name, Dateofbirth, email_address=None, ndis_number=None, password=None):
+    def create_user(self, mobile_number, first_name, last_name, Dateofbirth, email_address=None, ndis_number=None, password=None,Language_perfered=None,Refferal_code=None):
         if not mobile_number:
             raise ValueError('Users must have a mobile number')
         
@@ -19,6 +19,8 @@ class UserManager(BaseUserManager):
             Dateofbirth=Dateofbirth,
             email_address=email_address,
             ndis_number=ndis_number,
+            Language_perfered=Language_perfered,
+            Refferal_code=Refferal_code
         )
 
         user.set_password(password)
@@ -43,10 +45,13 @@ class User_mobile(AbstractBaseUser):
     mobile_number = models.CharField(max_length=15, unique=True)
     email_address = models.CharField(max_length=100, null=True, blank=True,unique=True)
     ndis_number = models.CharField(max_length=15, null=True, blank=True)
+    Language_perfered=models.CharField(max_length=100,null=True,blank=True)
+    Refferal_code=models.CharField(max_length=50,null=True,blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
+
     password=models.CharField(max_length=15)
 
     objects = UserManager()
@@ -83,7 +88,7 @@ class CustomerDetails(models.Model):
         verbose_name = 'CustomerDetails'
         verbose_name_plural = 'CustomerDetails'
         ordering = ['id']
-        # db_table = 'mobileapi_customerdetails'
+    
         managed = False
     
 
