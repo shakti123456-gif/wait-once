@@ -24,12 +24,17 @@ class UserRegistrationView(generics.CreateAPIView):
     queryset = User_mobile.objects.all()
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response({"message": "You have successfully created a user"}, status=status.HTTP_201_CREATED, headers=headers)
-    
+        try:
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                self.perform_create(serializer)
+                headers = self.get_success_headers(serializer.data)
+            else:
+                return Response({"message": "Please check your arguments", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "You have successfully created a user"}, status=status.HTTP_201_CREATED, headers=headers)
+        except:
+            return Http404("Internal server occured")
+        
 class update_user_data(APIView):
     
     # authentication_classes = [JWTAuthentication]
@@ -66,15 +71,11 @@ class Loginapi_views_jwt(APIView):
                 data = {
                     'user': User_mobile_serialize(user_stat).data
                 }
-
                 return Response({'message': data}, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
-
-
 
 class User_book_apointment(APIView):
     authentication_classes = [JWTAuthentication]

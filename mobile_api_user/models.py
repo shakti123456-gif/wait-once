@@ -8,11 +8,11 @@ from datetime import datetime
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, mobile_number, first_name, last_name, Dateofbirth, email_address=None, ndis_number=None, password=None,Language_perfered=None,Refferal_code=None):
+    def create_user(self,signing_as,mobile_number, first_name, last_name, Dateofbirth, email_address=None, ndis_number=None, password=None,Language_perfered=None,Refferal_code=None):
         if not mobile_number:
             raise ValueError('Users must have a mobile number')
-        
         user = self.model(
+            signing_as=signing_as,
             mobile_number=mobile_number,
             first_name=first_name,
             last_name=last_name,
@@ -38,6 +38,15 @@ class UserManager(BaseUserManager):
         return user
 
 class User_mobile(AbstractBaseUser):
+    SIGNING_AS_CHOICES = [
+        ('Self', 'Self'),
+        ('Parent', 'Parent'),
+    ]
+    signing_as = models.CharField(
+        max_length=6,
+        choices=SIGNING_AS_CHOICES,
+        default='Self',
+    )
     user_id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=100,null=True,blank=True)
     last_name = models.CharField(max_length=100,null=True,blank=True)
@@ -49,7 +58,7 @@ class User_mobile(AbstractBaseUser):
     Refferal_code=models.CharField(max_length=50,null=True,blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
-    is_superuser = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
     password=models.CharField(max_length=15)

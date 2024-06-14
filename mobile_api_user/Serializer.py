@@ -12,7 +12,7 @@ class User_mobile_serialize(serializers.ModelSerializer):
     class Meta:
         model = User_mobile
         fields = ['first_name', 'last_name', 'Dateofbirth', 'mobile_number', 'email_address', 
-                  'ndis_number','password', 'Language_perfered','Refferal_code'
+                  'ndis_number','password', 'Language_perfered','Refferal_code','signing_as'
             ]
         
 class LoginAPIView(serializers.Serializer):
