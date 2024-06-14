@@ -3,8 +3,7 @@ from django.db import models
 # Create your models here.
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
-from uuid import uuid4
-from datetime import datetime
+
 
 
 class UserManager(BaseUserManager):
@@ -53,7 +52,7 @@ class User_mobile(AbstractBaseUser):
     Dateofbirth = models.DateField(null=True, blank=True)
     mobile_number = models.CharField(max_length=15, unique=True)
     email_address = models.CharField(max_length=100, null=True, blank=True,unique=True)
-    ndis_number = models.CharField(max_length=15, null=True, blank=True)
+    ndis_number = models.CharField(max_length=15, null=True, blank=True,unique=True)
     Language_perfered=models.CharField(max_length=100,null=True,blank=True)
     Refferal_code=models.CharField(max_length=50,null=True,blank=True)
     is_active = models.BooleanField(default=True)
@@ -84,121 +83,13 @@ class User_mobile(AbstractBaseUser):
     def check_password(self, raw_password):
         return self.password==raw_password
 
+    def delete(self, *args, **kwargs):
+        print(f"Deleting instance: {self}")
+        super().delete(*args, **kwargs)  # Call the superclass delete method
 
 
-class CustomerDetails(models.Model):
-    height = models.CharField(max_length=5,null=True,blank=True)
-    weight = models.CharField(max_length=5,null=True,blank=True)
-    medical_history=models.TextField(null=True,blank=True)
-    documents=models.FileField(null=True,blank=True)
-    data_user = models.ForeignKey('User_mobile', null=True, on_delete=models.SET_NULL)
-
-    class Meta:
-        verbose_name = 'CustomerDetails'
-        verbose_name_plural = 'CustomerDetails'
-        ordering = ['id']
-    
-        managed = False
-    
-
-class SubUser(models.Model):
-    sub_user_id = models.AutoField(primary_key=True)
-    parent_detail = models.ForeignKey('User_mobile', null=True, on_delete=models.SET_NULL)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    date_of_birth = models.DateField()
-    ndis_number=models.CharField(max_length=20)
-    
-    class Meta:
-        verbose_name = 'Subuser'
-        verbose_name_plural = 'Subuser'
-        ordering = ['sub_user_id']
-        # db_table = 'mobileapi_subuser'
-        managed = False
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-    
 
 
-class Therapist(models.Model):
-    therapist_id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    Bio=models.TextField(null=True,blank=True)
-    
-    class Meta:
-        verbose_name = 'Therapist'
-        verbose_name_plural = 'Tharapists'
-        ordering = ['therapist_id']
-        managed = False
-
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-class Service(models.Model):
-    service_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    Therapist=models.ManyToManyField(Therapist,blank=True)
-
-    class Meta:
-        verbose_name = 'Services'
-        verbose_name_plural = 'Services'
-        ordering = ['service_id']
-        # db_table = 'mobileapi_service'
-        managed = True
-        
-
-    def __str__(self):
-        return self.name
-
-
-    # class meta:
-    #     db_table = 'Mobile_user'
-class Apointment(models.Model):
-    User_mobile=models.ForeignKey('User_mobile', null=True, on_delete=models.SET_NULL)
-    Apointment_id=models.AutoField(primary_key=True)
-    Unique_id=models.CharField(max_length=100,null=True,blank=True)
-    date=models.DateTimeField(null=True,blank=True)
-    provider_name=models.CharField(max_length=100,null=True,blank=True)
-    Therapist_name=models.CharField(max_length=100,null=True,blank=True)
-    Service_name=models.CharField(max_length=100,null=True,blank=True)
-    Booked=models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.Unique_id}"
-    
-    def save(self):
-        self.Unique_id = datetime.now().strftime('%Y%m-%d%H-%M%S-') +self.User_mobile.mobile_number
-        return super().save()
-
-
-class Provider(models.Model):
-    Provider_id = models.AutoField(primary_key=True)
-    organization_name=models.CharField(max_length=100)
-    Therapist_add=models.ManyToManyField(Therapist,blank=True)
-    services = models.ManyToManyField(Service, related_name='therapymobile_number', blank=True)
-    Apointment=models.ManyToManyField(Apointment,blank=True)
-    date=models.DateTimeField(null=True,blank=True)
-    def __str__(self):
-        return f"{self.organization_name}"
-
-    class meta:
-        db_table = 'mobileapi_provider'
-        # managed = False
-    
-    def check_apointment_book(self,**data):
-        self.Therapist_add
-
-# class Apointment_booked(models.Model):
-#     User_mobile=models.ForeignKey('User_mobile', null=True, on_delete=models.SET_NULL)
-#     Apointment_booked=models.AutoField(primary_key=True)
-#     Apointment=models.CharField(max_length=100,null=True,blank=True)
-
-class Appointment_booked(models.Model):
-    Apointment_unique_id=models.CharField(max_length=50)
 
 
 

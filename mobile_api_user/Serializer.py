@@ -1,5 +1,5 @@
 
-from .models import User_mobile,Service
+from .models import User_mobile
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -25,10 +25,7 @@ class UserMobileSerializer(serializers.ModelSerializer):
         model = User_mobile
         fields = '__all__'
 
-class ServiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Service
-        fields = '__all__'
+
 
 class CustomTokenObtainPairSerializer(serializers.Serializer):
     mobile_number = serializers.CharField()

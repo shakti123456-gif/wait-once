@@ -2,14 +2,14 @@ from django.shortcuts import render
 # Create your views here.
 from django.shortcuts import render
 from rest_framework import generics, status 
-from .models import User_mobile,Service
+from .models import User_mobile
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .Serializer import LoginAPIView ,User_mobile_serialize,ServiceSerializer,CustomTokenObtainPairSerializer
+from .Serializer import LoginAPIView ,User_mobile_serialize,CustomTokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
 from rest_framework.permissions import AllowAny
@@ -101,12 +101,7 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
 
 
 class fetch_all_Service(generics.ListAPIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
-    serializer_class = ServiceSerializer
-    
-    def get_queryset(self):
-        return Service.objects.all()
+    pass
 
 class CustomLoginView(generics.GenericAPIView):
     permission_classes = [AllowAny]
