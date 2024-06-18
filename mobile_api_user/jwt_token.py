@@ -1,4 +1,8 @@
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework.response import Response
+from rest_framework import status
 
 class CustomAccessToken(AccessToken):
     @classmethod
@@ -14,3 +18,6 @@ class CustomRefreshToken(RefreshToken):
         token['mobile_number'] = user.MobileNumber
         token['custom_field'] = 'custom_value' 
         return token
+    
+
+

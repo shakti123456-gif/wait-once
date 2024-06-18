@@ -13,6 +13,7 @@ from .jwt_token import *
 from rest_framework.permissions import AllowAny
 from django.db.models import Q
 import pytz
+from .authentication_backends import CustomJWTAuthentication
 from datetime import datetime ,timedelta
 
 class UserRegistrationView(generics.CreateAPIView):
@@ -53,7 +54,11 @@ class update_user_data(APIView):
         try:
             return User_mobile.objects.get(MobileNumber=number)
         except User_mobile.DoesNotExist:
-            raise Http404("User not exist ")
+            response={
+                "data":"error",
+                "notfound":"error"
+            }
+            raise Http404(response)
 
     def put(self,request, format=None):
         data_item=request.data
@@ -87,8 +92,8 @@ class Loginapi_views_jwt(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             Mobile_number=request.headers.get('MobileNumber')
-            user_name = serializer.validated_data['Username']
-            password = serializer.validated_data['Password']
+            user_name = serializer.validated_data['username']
+            password = serializer.validated_data['password']
             
             if not user_name:
                 user_name=Mobile_number
@@ -134,11 +139,14 @@ class Loginapi_views_jwt(APIView):
     
 
 class User_book_apointment(APIView):
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [CustomJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self,request,format=None):
-        pass
+    def post(self, request, format=None):
+        user_mobiles = User_mobile.objects.all()
+        print(f"Retrieved user mobiles: {user_mobiles}")
+        return Response({'message': 'Appointment booked successfully'}, status=status.HTTP_200_OK)
+    
 
 class UserMobileListAPIView(generics.ListAPIView):
     queryset = User_mobile.objects.all()
@@ -154,17 +162,21 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
         except Exception as e:
             return Response({"message":"you already deleted this token"}, status=status.HTTP_200_OK)
 
+def api_hit(request):
+    import requests
 
-class fetch_all_Service(generics.ListAPIView):
-    pass
-
-class CustomLoginView(generics.GenericAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = CustomTokenObtainPairSerializer
+    id = "YOUR_id_PARAMETER"
+    url = "https://api.au1.cliniko.com/v1/appointment_types/" + id + "/archive"
+    response = requests.post(url, auth=('shakti','yadav'))
+    if (response.status == 204):
+        print("success")
     
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+    else :
+        data = response.json()
+        print(data)
+
+
+
+
 
 

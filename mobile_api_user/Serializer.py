@@ -15,8 +15,8 @@ class User_mobile_serialize(serializers.ModelSerializer):
                   'NdisNumber', 'password', 'Language', 'RefferalCode', 'Signing_as']
         
 class LoginAPIView(serializers.Serializer):
-    Username = serializers.CharField(max_length=200)
-    Password = serializers.CharField(max_length=200)
+    username = serializers.CharField(max_length=200)
+    password = serializers.CharField(max_length=200)
     
 
 class UserMobileSerializer(serializers.ModelSerializer):
