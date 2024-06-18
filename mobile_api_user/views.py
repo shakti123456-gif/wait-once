@@ -106,16 +106,15 @@ class Loginapi_views_jwt(APIView):
                 access = CustomAccessToken.for_user(user_stat)
                 
                 data = {
-                    'refresh': str(refresh),
-                    'access': str(access),
-                    'id': user_stat.UserId,
+                    'refreshToken': str(refresh),
+                    'accessToken': str(access),
+                    'userId': user_stat.UserId,
                     'name': user_stat.FirstName,
-                    'email': user_stat.EmailAddress,
-                    'Created_At': Fix_time(user_stat.Created_At)
+                    'email': user_stat.EmailAddress
                 }
                 response = {
                     'status': 'success',
-                    'code': 200,
+                    'statusCode': 200,
                     'message': 'Request successful',
                     'data': data
                 }
