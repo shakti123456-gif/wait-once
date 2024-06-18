@@ -11,14 +11,13 @@ from .models  import User_mobile
 class User_mobile_serialize(serializers.ModelSerializer):
     class Meta:
         model = User_mobile
-        fields = ['first_name', 'last_name', 'Dateofbirth', 'mobile_number', 'email_address', 
-                  'ndis_number','password', 'Language_perfered','Refferal_code','signing_as'
-            ]
+        fields = ['FirstName', 'LastName', 'DateofBirth', 'MobileNumber', 'EmailAddress',
+                  'NdisNumber', 'password', 'Language', 'RefferalCode', 'Signing_as']
         
 class LoginAPIView(serializers.Serializer):
-    phonenumber = serializers.CharField(max_length=200)
-    password = serializers.CharField(max_length=200)
-
+    Username = serializers.CharField(max_length=200)
+    Password = serializers.CharField(max_length=200)
+    
 
 class UserMobileSerializer(serializers.ModelSerializer):
     class Meta:
