@@ -27,7 +27,7 @@ class UserRegistrationView(generics.CreateAPIView):
                     self.perform_create(serializer)
                 except Exception as e:
                     print(e)
-                    
+
                 headers = self.get_success_headers(serializer.data)
                 response_data = {
                     "status": "success",
@@ -51,7 +51,7 @@ class UserRegistrationView(generics.CreateAPIView):
 class update_user_data(APIView):
     
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     
     
     def get_object(self, number):
@@ -68,6 +68,7 @@ class update_user_data(APIView):
     def get(self,request,*args, **kwargs):
         try:
             user_id = kwargs.get("id")
+
             if user_id is not None:
                 user_object = User_mobile.objects.get(userId=user_id)
                 serializer = UserMobileSerializer(user_object)

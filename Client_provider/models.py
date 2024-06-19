@@ -58,7 +58,7 @@ class Therapist(models.Model):
     therapist_id = models.AutoField(primary_key=True)
     therapist_num = models.CharField(max_length=100)
     therapist_sal = models.CharField(max_length=10)
-    Therapist_auth=models.OneToOneField(User_mobile,on_delete=models.CASCADE)
+    Therapist_auth = models.OneToOneField(User_mobile,on_delete=models.CASCADE)
     therapist_type = models.CharField(max_length=50)
     dob = models.DateField()
     abn = models.CharField(max_length=20, blank=True, null=True) 
