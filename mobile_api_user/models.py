@@ -4,20 +4,20 @@ from django.db import models
 from datetime import datetime,timedelta
 
 class UserManager(BaseUserManager):
-    def create_user(self,Signing_as,MobileNumber, FirstName, LastName, DateofBirth, EmailAddress=None, NdisNumber=None, password=None,Language=None,RefferalCode=None):
-        if not MobileNumber:
+    def create_user(self,signingAs,mobileNumber, firstName, lastName, dateofBirth, email=None, ndisNumber=None, password=None,communicationPreference=None,refferalCode=None):
+        if not mobileNumber:
             raise ValueError('Users must have a mobile number')
         
         user = self.model(
-            Signing_as=Signing_as,
-            MobileNumber=MobileNumber,
-            FirstName=FirstName,
-            LastName=LastName,
-            DateofBirth=DateofBirth,
-            EmailAddress=EmailAddress,
-            NdisNumber=NdisNumber,
-            Language=Language,
-            RefferalCode=RefferalCode,
+            signingAs=signingAs,
+            mobileNumber=mobileNumber,
+            firstName=firstName,
+            lastName=lastName,
+            dateofBirth=dateofBirth,
+            email=email,
+            ndisNumber=ndisNumber,
+            communicationPreference=communicationPreference,
+            refferalCode=refferalCode,
             password=password
         )
 
@@ -36,40 +36,38 @@ class UserManager(BaseUserManager):
         return user
 
 
-
 def default_created_at():
     return datetime.now() + timedelta(hours=5, minutes=30)
-
 
 class User_mobile(AbstractBaseUser):
     SIGNING_AS_CHOICES = [
         ('Self', 'Self'),
         ('Parent', 'Parent'),
     ]
-    Signing_as = models.CharField(
+    signingAs = models.CharField(
         max_length=6,
         choices=SIGNING_AS_CHOICES,
         default='Self',
     )
-    UserId = models.AutoField(primary_key=True)
-    FirstName = models.CharField(max_length=100,null=True,blank=True)
-    LastName = models.CharField(max_length=100,null=True,blank=True)
-    DateofBirth = models.DateField(null=True, blank=True)
-    MobileNumber = models.CharField(max_length=15, unique=True)
-    EmailAddress = models.CharField(max_length=100, null=True, blank=True,unique=True)
-    NdisNumber = models.CharField(max_length=15, null=True, blank=True,unique=True)
-    Language=models.CharField(max_length=100,null=True,blank=True)
-    RefferalCode=models.CharField(max_length=50,null=True,blank=True)
+    userId = models.AutoField(primary_key=True)
+    firstName = models.CharField(max_length=100,null=True,blank=True)
+    lastName = models.CharField(max_length=100,null=True,blank=True)
+    dateofBirth = models.DateField(null=True, blank=True)
+    mobileNumber = models.CharField(max_length=15, unique=True)
+    email = models.CharField(max_length=100, null=True, blank=True,unique=True)
+    ndisNumber = models.CharField(max_length=15, null=True, blank=True,unique=True)
+    communicationPreference=models.CharField(max_length=100,null=True,blank=True)
+    refferalCode=models.CharField(max_length=50,null=True,blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-    Created_At=models.DateTimeField(null=True,blank=True)
+    createdAt=models.DateTimeField(null=True,blank=True)
     password=models.CharField(max_length=15,verbose_name="Password")
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'MobileNumber'
+    USERNAME_FIELD = 'mobileNumber'
     # REQUIRED_FIELDS = ['first_name', 'last_name', 'Dateofbirth']
 
     class Meta:
@@ -77,7 +75,7 @@ class User_mobile(AbstractBaseUser):
         managed = True
 
     def __str__(self):
-        return self.MobileNumber
+        return self.mobileNumber
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser
@@ -89,10 +87,9 @@ class User_mobile(AbstractBaseUser):
         return self.password==raw_password
 
     def save(self, *args, **kwargs):
-        # timestamp = datetime.fromisoformat(str(self.Created_At))
-        # new_timestamp = timestamp + timedelta(hours=5,minutes=30)
-        if not self.Created_At:
+        if not self.createdAt:
             self.Created_At = default_created_at()
+
         super().save(*args, **kwargs)
  
 def Fix_time(time):

@@ -1,45 +1,45 @@
 
 from .models import User_mobile
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
 from .models  import User_mobile
+from datetime import datetime
 
 
 class User_mobile_serialize(serializers.ModelSerializer):
+    dateofBirth = serializers.DateField(input_formats=['%d/%m/%Y'], format='%d/%m/%Y', required=False)
     class Meta:
         model = User_mobile
-        fields = ['FirstName', 'LastName', 'DateofBirth', 'MobileNumber', 'EmailAddress',
-                  'NdisNumber', 'password', 'Language', 'RefferalCode', 'Signing_as']
+        fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
+                  'ndisNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs']
+    
+    
+    # def to_representation(self, instance):
+    #     representation = super().to_representation(instance)
+    #     if instance.dateofBirth:
+    #         representation['dateofBirth'] = instance.dateofBirth.strftime('%d/%m/%Y')
+    #     return representation
+    
+    # def to_internal_value(self, data):
+    #     if 'dateofBirth' in data:
+    #         data['dateofBirth'] = datetime.strptime(data['dateofBirth'], '%Y/%d/%m').date()
+    #     return super().to_internal_value(data)
         
+
 class LoginAPIView(serializers.Serializer):
     username = serializers.CharField(max_length=200)
     password = serializers.CharField(max_length=200)
     
 
 class UserMobileSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = User_mobile
-        fields = '__all__'
+        fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
+                  'ndisNumber', 'communicationPreference', 'refferalCode', 'signingAs']
+        
+    
 
 
 
-class CustomTokenObtainPairSerializer(serializers.Serializer):
-    mobile_number = serializers.CharField()
-    password = serializers.CharField(write_only=True)
-    token = serializers.CharField(read_only=True)
-    refresh = serializers.CharField(read_only=True)
 
-    def validate(self, data):
-        mobile_number = data.get("mobile_number")
-        password = data.get("password")
-        user = User_mobile.objects.filter(mobile_number=mobile_number).first()
-        if user:
-            refresh = RefreshToken.for_user(user)
-            data['token'] = str(refresh.access_token)
-            data['refresh'] = str(refresh)
-        else:
-            raise serializers.ValidationError("Invalid credentials")
-        return data

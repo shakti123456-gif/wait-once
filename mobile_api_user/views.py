@@ -1,20 +1,19 @@
 
 from rest_framework import generics, status 
-from .models import User_mobile,Fix_time
+from .models import User_mobile
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.http import Http404
+from django.http import Http404,HttpResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from .Serializer import LoginAPIView ,User_mobile_serialize,CustomTokenObtainPairSerializer
+from .Serializer import LoginAPIView ,User_mobile_serialize,UserMobileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
 from rest_framework.permissions import AllowAny
 from django.db.models import Q
-import pytz
 from .authentication_backends import CustomJWTAuthentication
-from datetime import datetime ,timedelta
+
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = User_mobile_serialize
@@ -24,7 +23,11 @@ class UserRegistrationView(generics.CreateAPIView):
         try:
             serializer = self.get_serializer(data=request.data)
             if serializer.is_valid():
-                self.perform_create(serializer)
+                try:
+                    self.perform_create(serializer)
+                except Exception as e:
+                    print(e)
+                    
                 headers = self.get_success_headers(serializer.data)
                 response_data = {
                     "status": "success",
@@ -50,19 +53,46 @@ class update_user_data(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     
+    
     def get_object(self, number):
         try:
-            return User_mobile.objects.get(MobileNumber=number)
+            return User_mobile.objects.get(mobileNumber=number)
         except User_mobile.DoesNotExist:
             response={
-                "data":"error",
-                "notfound":"error"
+                'status': 'error',
+                'status-code': 401,
+                'message': 'Invalid credentials',
             }
             raise Http404(response)
+        
+    def get(self,request,*args, **kwargs):
+        try:
+            user_id = kwargs.get("id")
+            if user_id is not None:
+                user_object = User_mobile.objects.get(userId=user_id)
+                serializer = UserMobileSerializer(user_object)
+            else:
+                raise Exception ("User is not valid")
+            return Response(serializer.data)
+        except User_mobile.DoesNotExist:
+            response = {
+                'status': 'error',
+                'status-code': 404,
+                'message': 'User not found',
+            }
+            return Response(response, status=404)
+        except Exception as e:
+            response = {
+                'status': 'error',
+                'status-code': 400,
+                'message': str(e),
+            }
+            return Response(response, status=400)
+
 
     def put(self,request, format=None):
         data_item=request.data
-        number=data_item.get('MobileNumber',None)
+        number=data_item.get('mobileNumber',None)
         data_obj = self.get_object(number)
 
         serializer = User_mobile_serialize(data_obj, data=request.data,partial=True)
@@ -98,7 +128,7 @@ class Loginapi_views_jwt(APIView):
             if not user_name:
                 user_name=Mobile_number
             user_stat = User_mobile.objects.filter(
-                            (Q(MobileNumber=str(user_name)) | Q(EmailAddress=str(user_name))) & Q(password=password)
+                            (Q(mobileNumber=str(user_name)) | Q(email=str(user_name))) & Q(password=password)
                         ).first()
             
             if user_stat:
@@ -108,9 +138,9 @@ class Loginapi_views_jwt(APIView):
                 data = {
                     'refreshToken': str(refresh),
                     'accessToken': str(access),
-                    'userId': user_stat.UserId,
-                    'name': user_stat.FirstName,
-                    'email': user_stat.EmailAddress
+                    'userId': user_stat.userId,
+                    'name': user_stat.firstName,
+                    'email': user_stat.email
                 }
                 response = {
                     'status': 'success',
@@ -122,7 +152,7 @@ class Loginapi_views_jwt(APIView):
             else:
                 response = {
                     'status': 'error',
-                    'code': 401,
+                    'statusCode': 401,
                     'message': 'Invalid credentials',
                     'details': [{'field': 'username', 'issue': 'Invalid username or password'}]
                 }
@@ -130,7 +160,7 @@ class Loginapi_views_jwt(APIView):
         details = [{'field': key, 'issue': error[0]} for key, error in serializer.errors.items()]
         response = {
                 'status': 'error',
-                'code': 400,
+                'statusCode': 400,
                 'message': 'Bad Request',
                 'details': details
             }
@@ -164,15 +194,21 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
 def api_hit(request):
     import requests
 
-    id = "YOUR_id_PARAMETER"
-    url = "https://api.au1.cliniko.com/v1/appointment_types/" + id + "/archive"
-    response = requests.post(url, auth=('shakti','yadav'))
-    if (response.status == 204):
-        print("success")
-    
-    else :
-        data = response.json()
-        print(data)
+    url = "https://api.au1.cliniko.com/v1/appointment_types"
+
+    query = {
+        "order": "asc",
+        "page": "0",
+        "per_page": "1",
+        "q[]": "string",
+        "sort": "created_at:desc"
+        }
+
+    response = requests.get(url, params=query, auth=('<username>','<password>'))
+
+    data = response.json()
+    print(data)
+    return HttpResponse(data)
 
 
 
