@@ -51,7 +51,7 @@ class UserRegistrationView(generics.CreateAPIView):
 class update_user_data(APIView):
     
     authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     
     
     def get_object(self, number):
