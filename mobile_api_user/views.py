@@ -10,10 +10,10 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from .Serializer import LoginAPIView ,User_mobile_serialize,UserMobileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
-from rest_framework.permissions import AllowAny
 from django.db.models import Q
 from .authentication_backends import CustomJWTAuthentication
-
+from .authentication import JWTAuthentication
+# from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = User_mobile_serialize
@@ -50,10 +50,10 @@ class UserRegistrationView(generics.CreateAPIView):
 
 class update_user_data(APIView):
     
-    authentication_classes = [JWTAuthentication]
+    authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    
-    
+   
+
     def get_object(self, number):
         try:
             return User_mobile.objects.get(mobileNumber=number)
@@ -67,10 +67,9 @@ class update_user_data(APIView):
         
     def get(self,request,*args, **kwargs):
         try:
-            user_id = kwargs.get("id")
-
-            if user_id is not None:
-                user_object = User_mobile.objects.get(userId=user_id)
+            user_Id = request.headers.get('userID')
+            if user_Id is not None:
+                user_object = User_mobile.objects.get(userId=user_Id)
                 serializer = UserMobileSerializer(user_object)
             else:
                 raise Exception ("User is not valid")
@@ -101,7 +100,7 @@ class update_user_data(APIView):
             serializer.save()
             response = {
                     'status': 'success',
-                    'code': 200,
+                    'statusCode': 200,
                     'message': 'Password Successfully updated',
                 }
             return Response(response, status=status.HTTP_200_OK)
@@ -109,7 +108,7 @@ class update_user_data(APIView):
             details = [{'field': key, 'issue': error[0]} for key, error in serializer.errors.items()]
             response = {
                     'status': 'error',
-                    'code': 401,
+                    'statusCode': 401,
                     'message': 'Invalid credentials',
                     'details': [{'field': 'username', 'issue': 'Invalid username or password'}]
                 }
@@ -181,6 +180,8 @@ class User_book_apointment(APIView):
 class UserMobileListAPIView(generics.ListAPIView):
     queryset = User_mobile.objects.all()
     # serializer_class = UserMobileSerializer
+
+
 
 class LogoutAndBlacklistRefreshTokenForUserView(APIView):
     def post(self, request):

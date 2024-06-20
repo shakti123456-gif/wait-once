@@ -73,9 +73,12 @@ class User_mobile(AbstractBaseUser):
     class Meta:
         db_table = 'mobile_api_user_user_mobile'
         managed = True
+        verbose_name = "Mobile user"
+        verbose_name_plural = "Mobile user"
+
 
     def __str__(self):
-        return self.mobileNumber
+        return str(self.mobileNumber)
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser
@@ -95,6 +98,7 @@ class User_mobile(AbstractBaseUser):
 def Fix_time(time):
     formatted_timestamp = time.strftime("%B %d, %Y, at %I:%M %p and %S.%f seconds")
     return formatted_timestamp
+
 
 
 

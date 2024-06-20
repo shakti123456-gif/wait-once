@@ -10,7 +10,7 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="home.html")),
     path('user/create',UserRegistrationView.as_view(), name='create_mobile_user'),
     path('user/update-data',update_user_data.as_view()),
-    path('user/fetch-details/<int:id>',update_user_data.as_view()),
+    path('user/fetch-details',update_user_data.as_view()),
     path('user/login', Loginapi_views_jwt.as_view()),
     path('logout/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='auth_logout'),
     path('terms-conditions/', TemplateView.as_view(template_name='WO_T_C.html'), name='WO_T_C'),

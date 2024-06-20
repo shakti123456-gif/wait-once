@@ -27,7 +27,7 @@ class Client_details(models.Model):
     Client_ID = models.AutoField(primary_key=True)
     Client_auth = models.OneToOneField(User_mobile, on_delete=models.CASCADE,blank=True,null=True)
     Client_Number = models.IntegerField()
-    Client_Sal = models.CharField(max_length=100)
+    Client_Sal = models.CharField(max_length=5)
     Type = models.CharField(max_length=1, choices=Type_CHOICES)
     date_of_birth = models.DateTimeField()
     Ndis_Registered = models.BooleanField(default=False)
