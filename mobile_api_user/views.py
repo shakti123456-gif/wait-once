@@ -6,14 +6,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404,HttpResponse
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from .Serializer import LoginAPIView ,User_mobile_serialize,UserMobileSerializer
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
 from django.db.models import Q
-from .authentication_backends import CustomJWTAuthentication
+
 from .authentication import JWTAuthentication
-# from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from django.http import HttpResponse
+from .task import add
+
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = User_mobile_serialize
@@ -52,7 +53,6 @@ class update_user_data(APIView):
     
     authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]
-   
 
     def get_object(self, number):
         try:
@@ -167,20 +167,6 @@ class Loginapi_views_jwt(APIView):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
     
 
-class User_book_apointment(APIView):
-    authentication_classes = [CustomJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, format=None):
-        user_mobiles = User_mobile.objects.all()
-        print(f"Retrieved user mobiles: {user_mobiles}")
-        return Response({'message': 'Appointment booked successfully'}, status=status.HTTP_200_OK)
-    
-
-class UserMobileListAPIView(generics.ListAPIView):
-    queryset = User_mobile.objects.all()
-    # serializer_class = UserMobileSerializer
-
 
 
 class LogoutAndBlacklistRefreshTokenForUserView(APIView):
@@ -193,26 +179,9 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
         except Exception as e:
             return Response({"message":"you already deleted this token"}, status=status.HTTP_200_OK)
 
-def api_hit(request):
-    import requests
-
-    url = "https://api.au1.cliniko.com/v1/appointment_types"
-
-    query = {
-        "order": "asc",
-        "page": "0",
-        "per_page": "1",
-        "q[]": "string",
-        "sort": "created_at:desc"
-        }
-
-    response = requests.get(url, params=query, auth=('<username>','<password>'))
-
-    data = response.json()
-    print(data)
-    return HttpResponse(data)
-
-
+def show(request):
+    add.delay(5, 6)
+    return HttpResponse("Success")
 
 
 

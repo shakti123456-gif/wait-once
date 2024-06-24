@@ -14,8 +14,7 @@ urlpatterns = [
     path('user/login', Loginapi_views_jwt.as_view()),
     path('logout/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='auth_logout'),
     path('terms-conditions/', TemplateView.as_view(template_name='WO_T_C.html'), name='WO_T_C'),
-    path('custom-api-auth/', User_book_apointment.as_view(), name='no_module'),
-    path('api_hit/',api_hit,name="api-hit")
+    path('delay/',show,name="show-error")
 ]
 
 # urlpatterns = format_suffix_patterns(urlpatterns)

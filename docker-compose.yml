@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # AMQP port
+      - "15672:15672"  # RabbitMQ management UI port
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6378:6379"  # Redis default port
+
+  django:
+    build:
+      context: .
+    container_name: django
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - mynetwork
+
+  celery:
+    build:
+      context: .
+    container_name: celery
+    command: celery -A your_project worker --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge

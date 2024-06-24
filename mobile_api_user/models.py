@@ -4,7 +4,7 @@ from django.db import models
 from datetime import datetime,timedelta
 
 class UserManager(BaseUserManager):
-    def create_user(self,signingAs,mobileNumber, firstName, lastName, dateofBirth, email=None, ndisNumber=None, password=None,communicationPreference=None,refferalCode=None):
+    def create_user(self,mobileNumber,password, firstName=None, lastName=None, dateofBirth=None, email=None, ndisNumber=None,communicationPreference=None,refferalCode=None,signingAs="Self"):
         if not mobileNumber:
             raise ValueError('Users must have a mobile number')
         
@@ -25,9 +25,9 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, mobile_number,password=None):
+    def create_superuser(self, mobileNumber,password):
         user = self.create_user(
-            mobile_number,
+            mobileNumber=mobileNumber,
             password=password,
         )
         user.is_superuser = True
@@ -92,7 +92,6 @@ class User_mobile(AbstractBaseUser):
     def save(self, *args, **kwargs):
         if not self.createdAt:
             self.Created_At = default_created_at()
-
         super().save(*args, **kwargs)
  
 def Fix_time(time):
@@ -100,6 +99,23 @@ def Fix_time(time):
     return formatted_timestamp
 
 
+
+class Error_handling(models.Model):
+    errorId = models.AutoField(primary_key=True)
+    status=models.CharField(max_length=30)
+    status_Code=models.IntegerField()
+    message=models.CharField(max_length=100)
+    details=models.TextField()
+    default_message=models.BooleanField(default=False)
+
+    def __str__(self):
+        return  str(self.status_Code)
+
+    class Meta:
+        db_table = ''
+        managed = True
+        verbose_name = 'Error handling'
+        verbose_name_plural = 'Error handling'
 
 
 

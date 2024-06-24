@@ -10,7 +10,7 @@ from rest_framework.authentication import BaseAuthentication
 class userlogin(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            user = User_mobile.objects.get(MobileNumber=username,password=password)
+            user = User_mobile.objects.get(mobileNumber=username,password=password)
             return user
         except Exception as e:
             return None
@@ -27,7 +27,7 @@ class userlogin(ModelBackend):
 
 class CustomJWTAuthentication(BaseAuthentication):
     def get_header(self, request):
-        # Extract the token from the Authorization header
+
         auth_header = request.META.get('HTTP_AUTHORIZATION')
         parts = auth_header.split()
         if len(parts) != 4 or parts[0].lower() != 'Userid' or parts[2].lower() != 'token':

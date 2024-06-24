@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-7)4os+rn(rx!molulb$)jcr3)1=a=aj4h7^1afy%+la+t5(&3a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -37,7 +37,10 @@ INSTALLED_APPS = [
     'allauth',
     'drf_yasg',
     'rest_framework_simplejwt.token_blacklist',
-    'mobile_api_user'
+    'mobile_api_user',
+    'Client_provider',
+    'django_celery_results',
+
 
 ]
 
@@ -137,7 +140,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
     "UPDATE_LAST_LOGIN": False,
-
     "ALGORITHM": "HS256",
     "SIGNING_KEY": SECRET_KEY,
     "VERIFYING_KEY": "",
@@ -171,9 +173,6 @@ SIMPLE_JWT = {
     # "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -221,3 +220,10 @@ STATICFILES_DIRS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
+
+
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+CELERY_RESULT_BACKEND = 'django-db'
+
+
+CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net/']
