@@ -25,11 +25,11 @@ class JWTAuthentication(BaseAuthentication):
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
             jwt_user_id=payload.get('userId')
             if str(userId) != str(jwt_user_id):
-                response['message']='Invalid userid'
+                response['message']='Aceess token is not match with UserID'
                 raise exceptions.AuthenticationFailed(response)
             
             if payload.get('mobile_number') != mobile_id:
-                response['message']='Invalid mobile number'
+                response['message']='Aceess token is not match with mobile_number'
                 raise exceptions.AuthenticationFailed(response)
             try:
                 user = User_mobile.objects.get(userId=userId)

@@ -1,62 +1,104 @@
 
-from rest_framework import generics, status 
-from .models import User_mobile
+from rest_framework import generics, status
+from .models import User_mobile,Client_details_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404,HttpResponse
 from rest_framework.permissions import IsAuthenticated
-from .Serializer import LoginAPIView ,User_mobile_serialize,UserMobileSerializer
+from .Serializer import LoginAPIView ,UserMobileSerializer,ClientDetailSerializer,ClientSubSerializer,UserMobileSerializerfetch
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
 from django.db.models import Q
-
 from .authentication import JWTAuthentication
-from django.http import HttpResponse
 from .task import add
 
 
 class UserRegistrationView(generics.CreateAPIView):
-    serializer_class = User_mobile_serialize
-    queryset = User_mobile.objects.all()
+    serializer_class = ClientDetailSerializer
+    queryset = Client_details_view.objects.all()
     
     def create(self, request, *args, **kwargs):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            if serializer.is_valid():
-                try:
-                    self.perform_create(serializer)
-                except Exception as e:
-                    print(e)
+        client_auth_data = request.data.pop('ClientAuth', None)
+        if not client_auth_data:
+            response = {
+                'status': 'error',
+                'status-code': 400,
+                'message': 'ClientAuth data is required'
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-                headers = self.get_success_headers(serializer.data)
-                response_data = {
-                    "status": "success",
-                    "code": 201,
-                    "message": "User successfully created"
-                    # "data": serializer.data
-                }
-                return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
-            else:
-                details = [{'field': key, 'issue': error[0]} for key, error in serializer.errors.items()]
-                response_data = {
-                    "status": "error",
-                    "code": 400,
-                    "message": "Bad Request",
-                    "details": details
-                }
-                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+        client_auth_serializer = UserMobileSerializer(data=client_auth_data)
+        add_caretaker_detail = []
 
-class update_user_data(APIView):
+        if client_auth_data.get("signingAs") == "Parent":
+            add_caretaker_data = request.data.pop('addCaretakerDetail', None)
+            if add_caretaker_data is None:
+                response = {
+                    'status': 'error',
+                    'status-code': 400,
+                    'message': 'Please add Caretaker details',
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+            add_caretaker_serializer = ClientSubSerializer(data=add_caretaker_data, many=True)
+            if not add_caretaker_serializer.is_valid():
+                details = [
+                    {'field': key, 'issue': error[0]}
+                    for error_dict in add_caretaker_serializer.errors
+                    for key, error in error_dict.items()
+                ]
+                response = {
+                    'status': 'error',
+                    'status-code': 400,
+                    'message': 'Invalid Caretaker details',
+                    'details': details
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        if not client_auth_serializer.is_valid():
+            details = [
+                {'field': key, 'issue': error[0]}
+                for key, error in client_auth_serializer.errors.items()
+            ]
+            response_data = {
+                "status": "error",
+                "code": 400,
+                "message": "Bad Request",
+                "details": details
+            }
+            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            if client_auth_data.get("signingAs") == "Parent":
+                add_caretaker_detail = add_caretaker_serializer.save()
+
+            client_auth = client_auth_serializer.save()
+            serializer.save(Client_auth=client_auth, Add_Caretaker_Detail=add_caretaker_detail)
+
+            response = {
+                'status': 'success',
+                'status-code': 201,
+                'message': 'User created successfully'
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+ 
+
+
+class Fetch_and_update_user(APIView):
     
     authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_object(self, number):
+    def get_object(self,**kwargs):
         try:
-            return User_mobile.objects.get(mobileNumber=number)
+            phonenumber= kwargs.get("number",None)
+            if  phonenumber is None:
+                raise Exception("")
+            return User_mobile.objects.get(mobileNumber=phonenumber)
         except User_mobile.DoesNotExist:
             response={
                 'status': 'error',
@@ -67,12 +109,15 @@ class update_user_data(APIView):
         
     def get(self,request,*args, **kwargs):
         try:
-            user_Id = request.headers.get('userID')
-            if user_Id is not None:
-                user_object = User_mobile.objects.get(userId=user_Id)
-                serializer = UserMobileSerializer(user_object)
-            else:
-                raise Exception ("User is not valid")
+            user_Id = request.headers.get('userId',None)
+            if user_Id is None:
+                response = {
+                'status': 'error',
+                'status-code': 404,
+                'message': 'Please pass userId in header',
+                }
+            user_object = User_mobile.objects.get(userId=user_Id)
+            serializer = UserMobileSerializerfetch(user_object)
             return Response(serializer.data)
         except User_mobile.DoesNotExist:
             response = {
@@ -90,29 +135,39 @@ class update_user_data(APIView):
             return Response(response, status=400)
 
 
-    def put(self,request, format=None):
-        data_item=request.data
-        number=data_item.get('mobileNumber',None)
-        data_obj = self.get_object(number)
+    def put(self,request,*args, **kwargs):
+        try:
+            data_item=request.data
+            number=data_item.get('mobileNumber',None)
+            data_obj = self.get_object(number=number)
 
-        serializer = User_mobile_serialize(data_obj, data=request.data,partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                    'status': 'success',
-                    'statusCode': 200,
-                    'message': 'Password Successfully updated',
-                }
-            return Response(response, status=status.HTTP_200_OK)
-        else:
-            details = [{'field': key, 'issue': error[0]} for key, error in serializer.errors.items()]
-            response = {
-                    'status': 'error',
-                    'statusCode': 401,
-                    'message': 'Invalid credentials',
-                    'details': [{'field': 'username', 'issue': 'Invalid username or password'}]
-                }
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            serializer = UserUpdateSerializer(data_obj, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                response = {
+                        'status': 'success',
+                        'statusCode': 200,
+                        'message': 'Password Successfully updated',
+                    }
+                return Response(response, status=status.HTTP_200_OK)
+            else:
+                details = [{'field': key, 'issue': error[0]} for key, error in serializer.errors.items()]
+                response = {
+                        'status': 'error',
+                        'statusCode': 401,
+                        'message': 'Invalid credentials',
+                        'details': [{'field': 'username', 'issue': 'Invalid username or password'}]
+                    }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            response={
+                'status': 'error',
+                'statusCode': 401,
+                'message': 'Invalid data',
+            }
+            return Response(response ,status=status.HTTP_400_BAD_REQUEST)
+            
+
 
 
 class Loginapi_views_jwt(APIView):
@@ -179,10 +234,69 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
         except Exception as e:
             return Response({"message":"you already deleted this token"}, status=status.HTTP_200_OK)
 
+
+class UserUpdateView(APIView):
+    def put(self, request, *args, **kwargs):
+        try:
+            user_name=request.data.get("userName")
+            password=request.data.get("newPassword")
+            user_stat = User_mobile.objects.filter(
+                            (Q(mobileNumber=str(user_name)) | Q(email=str(user_name)))
+                        ).first()
+            if not user_stat:
+                response = {
+                'status': 'error',
+                'statusCode': 400,
+                'message': 'Requested user is not exist',
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            user_stat.password=password
+            user_stat.save()
+            response = {
+                'status': 'Success',
+                'statusCode': 200,
+                'message': 'password was Successfully updated',
+                }
+            return Response(response, status=status.HTTP_200_OK)
+    
+        except Exception as e:
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Profile_page():
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def show(request):
-    add.delay(5, 6)
-    return HttpResponse("Success")
-
-
-
-
+    pass

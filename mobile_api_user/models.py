@@ -2,6 +2,9 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from datetime import datetime,timedelta
+from Client_provider.BaseUser import Baseclass
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 class UserManager(BaseUserManager):
     def create_user(self,mobileNumber,password, firstName=None, lastName=None, dateofBirth=None, email=None, ndisNumber=None,communicationPreference=None,refferalCode=None,signingAs="Self"):
@@ -62,7 +65,8 @@ class User_mobile(AbstractBaseUser):
     is_staff = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-    createdAt=models.DateTimeField(null=True,blank=True)
+    createdAt = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    lastUpdate = models.DateTimeField(auto_now=True,null=True,blank=True)
     password=models.CharField(max_length=15,verbose_name="Password")
 
     objects = UserManager()
@@ -119,4 +123,45 @@ class Error_handling(models.Model):
 
 
 
+class Client_sub_view(models.Model):
+    clientSubId=models.AutoField(primary_key=True)
+    first_name=models.CharField(max_length=100)
+    last_name=models.CharField(max_length=100)
+    dateofbirth=models.DateField(null=True,blank=True) 
+    Ndisnumber=models.CharField(max_length=20,unique=True,null=True,blank=True)
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+    
+    class Meta:
+        db_table = ''
+        managed = True
+        verbose_name = 'Client sub'
+        verbose_name_plural = 'Client sub'
+
+
+class Client_details_view(Baseclass):
+    Type_CHOICES = (
+        ('M', 'M'),
+        ('F', 'F'),
+    )
+    Client_ID = models.AutoField(primary_key=True)
+    Client_auth = models.OneToOneField(User_mobile, on_delete=models.CASCADE)
+    Client_Number = models.PositiveIntegerField(null=True,blank=True)
+    Client_Sal = models.CharField(max_length=5,null=True,blank=True)
+    Type = models.CharField(max_length=1, choices=Type_CHOICES,null=True,blank=True)
+    Add_Caretaker_Detail=models.ManyToManyField(Client_sub_view)
+    
+    def __str__(self):
+        return f"{self.Client_Number}"
+    
+    class Meta:
+        db_table = ''
+        managed = True
+        verbose_name = 'Client details'
+        verbose_name_plural = 'Client details'
+
+
+@receiver(pre_save, sender=User_mobile)
+def create_profile(sender, instance, **kwargs):
+    print("value")

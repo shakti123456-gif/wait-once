@@ -10,7 +10,7 @@ from rest_framework.authentication import BaseAuthentication
 class userlogin(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
         try:
-            user = User_mobile.objects.get(mobileNumber=username,password=password)
+            user = User_mobile.objects.get(mobileNumber=username)
             return user
         except Exception as e:
             return None

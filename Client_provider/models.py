@@ -1,46 +1,9 @@
 from typing import Iterable
 from django.db import models
 from mobile_api_user.models import User_mobile
-from.BaseUser import Baseclass
+from .BaseUser import Baseclass
 
 
-class Client_sub(models.Model):
-    first_name=models.CharField(max_length=100) 
-    last_name=models.CharField(max_length=100)
-    dateofbirth=models.DateTimeField()
-    Ndisnumber=models.CharField(max_length=20)
-
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-    
-    class Meta:
-        db_table = ''
-        managed = True
-        verbose_name = 'Client sub'
-        verbose_name_plural = 'Client sub'
-
-
-class Client_details(Baseclass):
-    Type_CHOICES = (
-        ('M', 'M'),
-        ('F', 'F'),
-    )
-    Client_ID = models.AutoField(primary_key=True)
-    Client_auth = models.OneToOneField(User_mobile, on_delete=models.CASCADE,blank=True,null=True)
-    Client_Number = models.PositiveIntegerField(null=True,blank=True)
-    Client_Sal = models.CharField(max_length=5)
-    Type = models.CharField(max_length=1, choices=Type_CHOICES)
-    Add_Caretaker_Detail=models.ManyToManyField(Client_sub)
-    
-    
-    def __str__(self):
-        return f"{self.Client_Number}"
-    
-    class Meta:
-        db_table = ''
-        managed = True
-        verbose_name = 'Client details'
-        verbose_name_plural = 'Client details'
 
 class Location(models.Model):
     location_id = models.AutoField(primary_key=True)

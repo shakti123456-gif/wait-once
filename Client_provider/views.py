@@ -28,8 +28,6 @@ class ProviderListRetrieveView(generics.GenericAPIView):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-
-
     def handle_exception(self, exc):
         response = super().handle_exception(exc)
        
@@ -71,7 +69,6 @@ class TherapistListRetrieveView(generics.GenericAPIView):
                 'status-code': 404,
                 'message': 'Provider  not found',
             }
-        
         return Response(response, status=404)
  
 

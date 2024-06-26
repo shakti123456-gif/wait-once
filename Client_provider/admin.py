@@ -2,15 +2,7 @@ from django.contrib import admin
 from .models import *
 
 
-class Client_Details(admin.ModelAdmin):
-    list_display = ('Client_auth', 'Client_Number', 'Client_Sal','Type')
-    # list_filter =  ('author', 'is_published', 'published_date')
-    # search_fields = ('title', 'author_name')
-    # ordering = ('-published_date',)
-    fields = ['Client_auth', 'Client_Number', 'Client_Sal','Type','Add_Caretaker_Detail',
-              'Alternative_mobile_number','Permanent_Address_1','Permanent_Address_2','City',
-              'State','PIN','Additional_Info1','Additional_Info2','Additional_Info3','Additional_Info4']
-    
+
 
 class Therapist_Details(admin.ModelAdmin):
   
@@ -35,17 +27,10 @@ class Provider_Details(admin.ModelAdmin):
               'State','PIN','Additional_Info1','Additional_Info2','Additional_Info3','Additional_Info4']
     
 
-
-    
-
+ # readonly_fields = ('created_at', 'updated_at')
 
 
-    # readonly_fields = ('created_at', 'updated_at')
-
-
-admin.site.register(Client_sub)
 admin.site.register(Therapist,Therapist_Details)
-admin.site.register(Client_details,Client_Details)
 admin.site.register(Provider,Provider_Details)
 admin.site.register(Location)
 admin.site.register(Service)
