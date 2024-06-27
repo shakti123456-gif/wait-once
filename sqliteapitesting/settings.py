@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-7)4os+rn(rx!molulb$)jcr3)1=a=aj4h7^1afy%+la+t5(&3a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["https://wait-once-help.azurewebsites.net","localhost"]
+ALLOWED_HOSTS = ['wait-once-help.azurewebsites.net','localhost','127.0.0.1']
 
 AUTH_USER_MODEL = 'mobile_api_user.User_mobile'
 
