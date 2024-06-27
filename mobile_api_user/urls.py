@@ -12,6 +12,8 @@ urlpatterns = [
     path('user/login', Loginapi_views_jwt.as_view()),
     path('logout/', LogoutAndBlacklistRefreshTokenForUserView.as_view(), name='auth_logout'),
     path('terms-conditions/', TemplateView.as_view(template_name='WO_T_C.html'), name='WO_T_C'),
+    path('privacy-policy/', TemplateView.as_view(template_name='privacy.html'), name='WO_T_C'),
+    path('user/children-details', ChildrenListView.as_view(),name="fetch_child_data"),
     path('delay/',show,name="show-error")
 ]
 

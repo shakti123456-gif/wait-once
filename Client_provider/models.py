@@ -27,19 +27,16 @@ class Location(models.Model):
 class Therapist(Baseclass):
     therapist_id = models.AutoField(primary_key=True)
     therapist_num = models.CharField(max_length=100)
-    therapist_sal = models.CharField(max_length=10)
     therapist_auth = models.OneToOneField(User_mobile,on_delete=models.CASCADE)
     therapist_type = models.CharField(max_length=50)
     abn = models.CharField(max_length=20, blank=True, null=True) 
     service_age_group = models.CharField(max_length=50, blank=True, null=True)
-    # verterans
     dva = models.CharField(max_length=50,blank=True,null=True)  
     independent = models.BooleanField(default=False)
     multi_provider = models.BooleanField(default=False)
     multi_Location = models.ManyToManyField(Location)
     web = models.URLField(blank=True, null=True)
     date_field= models.DateTimeField(null=True,blank=True)
-    
 
     def __str__(self):
         return f"{self.therapist_id}"
@@ -54,7 +51,6 @@ class Therapist_booked(models.Model):
     def __str__(self) -> str:
         return f"{self.therapist_detail.therapist_id if self.therapist_detail else 'No Therapist'}"
     class Meta:
-        # db_table = ''
         managed = True
         verbose_name = 'Therapist Booked slot'
         verbose_name_plural = 'Therapist Booked slot'
@@ -96,12 +92,11 @@ class therapist_service(models.Model):
     Therapist_Name=models.ForeignKey(Therapist,on_delete=models.SET_NULL,null=True,blank=True)
     service_Name=models.ForeignKey(Service,on_delete=models.SET_NULL,null=True,blank=True) 
 
-
+    
     class Meta:
         unique_together = ('Therapist_Name', 'service_Name')
 
-    def __str__(self):
-        return f"{self.Therapist_Name.therapist_auth.firstName}  {self.service_Name.service_name}" 
+
 
 
 class Provider(Baseclass):
@@ -125,19 +120,8 @@ class Provider(Baseclass):
     def __str__(self):
         return self.provider_name
 
-    # def save(self, *args, **kwargs):
-    #     # Ensure no duplicate therapist_service entries in therapist_service_map
-    #     existing_services = set(self.therapist_service_map.all())
-    #     new_services = set(kwargs.get('therapist_service_map', []))
-
-    #     if existing_services.intersection(new_services):
-    #         raise ValueError("Duplicate therapist_service entries are not allowed")
-
-    #     super().save(*args, **kwargs)
-
 
 class Appointment(models.Model):
-    # client = models.ForeignKey(ClientDetails, on_delete=models.CASCADE)
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     therapist = models.ForeignKey(Therapist, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
@@ -151,13 +135,6 @@ class Appointment(models.Model):
 
     def clean(self):
         pass
-        # overlapping_appointments = Appointment.objects.filter(
-        #     provider=self.provider,
-        #     appointment_time=self.appointment_time
-        # ).exists()
-        
-        # if overlapping_appointments:
-        #     raise ValidationError(f"The time slot {self.appointment_time} is already booked for this provider.")
 
     def save(self, *args, **kwargs):
         self.full_clean()  # This will call the clean method

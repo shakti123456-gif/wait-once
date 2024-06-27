@@ -45,7 +45,7 @@ def default_created_at():
 class User_mobile(AbstractBaseUser):
     SIGNING_AS_CHOICES = [
         ('Self', 'Self'),
-        ('Parent', 'Parent'),
+        ('Parent', 'Parent')
     ]
     signingAs = models.CharField(
         max_length=6,
@@ -53,6 +53,7 @@ class User_mobile(AbstractBaseUser):
         default='Self',
     )
     userId = models.AutoField(primary_key=True)
+    Client_Sal = models.CharField(max_length=1,null=True,blank=True,default="Mr")
     firstName = models.CharField(max_length=100,null=True,blank=True)
     lastName = models.CharField(max_length=100,null=True,blank=True)
     dateofBirth = models.DateField(null=True, blank=True)
@@ -97,7 +98,11 @@ class User_mobile(AbstractBaseUser):
         if not self.createdAt:
             self.Created_At = default_created_at()
         super().save(*args, **kwargs)
- 
+    
+    def get_details(self):
+        pass
+
+
 def Fix_time(time):
     formatted_timestamp = time.strftime("%B %d, %Y, at %I:%M %p and %S.%f seconds")
     return formatted_timestamp
@@ -147,8 +152,6 @@ class Client_details_view(Baseclass):
     )
     Client_ID = models.AutoField(primary_key=True)
     Client_auth = models.OneToOneField(User_mobile, on_delete=models.CASCADE)
-    Client_Number = models.PositiveIntegerField(null=True,blank=True)
-    Client_Sal = models.CharField(max_length=5,null=True,blank=True)
     Type = models.CharField(max_length=1, choices=Type_CHOICES,null=True,blank=True)
     Add_Caretaker_Detail=models.ManyToManyField(Client_sub_view)
     
@@ -158,8 +161,8 @@ class Client_details_view(Baseclass):
     class Meta:
         db_table = ''
         managed = True
-        verbose_name = 'Client details'
-        verbose_name_plural = 'Client details'
+        verbose_name = 'User Profiles'
+        verbose_name_plural = 'User Profiles'
 
 
 @receiver(pre_save, sender=User_mobile)

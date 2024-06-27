@@ -44,6 +44,13 @@ class UserMobileSerializerfetch(serializers.ModelSerializer):
                   'ndisNumber', 'communicationPreference', 'signingAs']
         
 
+class UserMobileSerializerfetch(serializers.ModelSerializer):    
+    class Meta:
+        model = Client_sub_view
+        fields = ['first_name', 'last_name', 'dateofBirth', 'Ndisnumber']
+        
+
+
 
 
         

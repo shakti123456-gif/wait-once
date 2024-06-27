@@ -117,6 +117,7 @@ class Fetch_and_update_user(APIView):
                 'message': 'Please pass userId in header',
                 }
             user_object = User_mobile.objects.get(userId=user_Id)
+            Profile_percentage=user_object.get_details()
             serializer = UserMobileSerializerfetch(user_object)
             return Response(serializer.data)
         except User_mobile.DoesNotExist:
@@ -133,43 +134,7 @@ class Fetch_and_update_user(APIView):
                 'message': str(e),
             }
             return Response(response, status=400)
-
-
-    def put(self,request,*args, **kwargs):
-        try:
-            data_item=request.data
-            number=data_item.get('mobileNumber',None)
-            data_obj = self.get_object(number=number)
-
-            serializer = UserUpdateSerializer(data_obj, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                response = {
-                        'status': 'success',
-                        'statusCode': 200,
-                        'message': 'Password Successfully updated',
-                    }
-                return Response(response, status=status.HTTP_200_OK)
-            else:
-                details = [{'field': key, 'issue': error[0]} for key, error in serializer.errors.items()]
-                response = {
-                        'status': 'error',
-                        'statusCode': 401,
-                        'message': 'Invalid credentials',
-                        'details': [{'field': 'username', 'issue': 'Invalid username or password'}]
-                    }
-                return Response(response, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            response={
-                'status': 'error',
-                'statusCode': 401,
-                'message': 'Invalid data',
-            }
-            return Response(response ,status=status.HTTP_400_BAD_REQUEST)
-            
-
-
-
+        
 class Loginapi_views_jwt(APIView):
     serializer_class = LoginAPIView
 
@@ -222,8 +187,6 @@ class Loginapi_views_jwt(APIView):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
     
 
-
-
 class LogoutAndBlacklistRefreshTokenForUserView(APIView):
     def post(self, request):
         try:
@@ -258,22 +221,44 @@ class UserUpdateView(APIView):
                 'message': 'password was Successfully updated',
                 }
             return Response(response, status=status.HTTP_200_OK)
-    
+        
         except Exception as e:
+            response = {
+                'status': 'error',
+                'statusCode': 400,
+                'message': 'Internal server error occured',
+            }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
-class Profile_page():
-    pass
 
+class ChildrenListView(generics.ListAPIView):
+    authentication_classes=[JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class=ClientSubSerializer
 
+    def get_queryset(self):
+        userId = self.request.headers.get('userId',None)
+        try:
+            client_detail = Client_details_view.objects.filter(Client_auth__userId=userId).first()
+            caretakers=[]
+            if client_detail:
+                caretakers = client_detail.Add_Caretaker_Detail.all()
+            return caretakers
+        except Exception as e:
+                print(e)
 
-
-
-
-
-
-
+    def list(self, request):
+        queryset = self.get_queryset()
+        if not queryset:
+            response = {
+                'status': 'error',
+                'statusCode': 200,
+                'message': 'user doestnot have children details',
+                }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
 
 
 
