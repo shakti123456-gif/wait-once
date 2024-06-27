@@ -92,11 +92,8 @@ class therapist_service(models.Model):
     Therapist_Name=models.ForeignKey(Therapist,on_delete=models.SET_NULL,null=True,blank=True)
     service_Name=models.ForeignKey(Service,on_delete=models.SET_NULL,null=True,blank=True) 
 
-    
     class Meta:
         unique_together = ('Therapist_Name', 'service_Name')
-
-
 
 
 class Provider(Baseclass):

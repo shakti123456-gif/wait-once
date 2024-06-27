@@ -5,82 +5,34 @@ from .Serializers import ProviderSerializer,therapistSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 
 
 
-class ProviderListRetrieveView(generics.GenericAPIView):
-    serializer_class = ProviderSerializer
 
+class ProviderViewSet(viewsets.ModelViewSet):
 
-    def get_queryset(self):
-        userId = self.request.headers.get('userId',None)
-        try:
-            client_detail = Provider.objects.filter(Client_auth__userId=userId).first()
-            caretakers=[]
-            if client_detail:
-                caretakers = client_detail.Add_Caretaker_Detail.all()
-            return caretakers
-        except Exception as e:
-                print(e)
-
-
-    def get(self, request, *args, **kwargs):
-        if 'pk' in kwargs:
-            return self.retrieve(request, *args, **kwargs)
-        return self.list(request, *args, **kwargs)
-    
-    def list(self, request, search ,*args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+    def list(self, request):
+        queryset = Provider.objects.all()
+        serializer = ProviderSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    def retrieve(self, request, name ,*args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
+    def retrieve(self, request, pk=None):
+        queryset = Provider.objects.filter(pk=pk).first()
+        serializer = ProviderSerializer(queryset)
         return Response(serializer.data)
 
-    def handle_exception(self, exc):
-        response = super().handle_exception(exc)
-        response = {
-                'status': 'error',
-                'status-code': 404,
-                'message': 'Provider  not found',
-            }
-        
-        return Response(response, status=404)
-
-
-class TherapistListRetrieveView(generics.GenericAPIView):
-    queryset = Therapist.objects.all()
-    serializer_class = therapistSerializer
-
-    def get(self, request, *args, **kwargs):
-        if 'pk' in kwargs:
-            return self.retrieve(request, *args, **kwargs)
-        return self.list(request, *args, **kwargs)
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+    @action(detail=True, methods=['get'])
+    def therapist(self, request, pk=None):
+        provider = Provider.objects.filter(pk=pk).first()
+        # Assuming Therapist is related to Provider somehow
+        therapists = provider.therapists.all()
+        serializer = TherapistSerializer(therapists, many=True)
         return Response(serializer.data)
 
-    def retrieve(self,request,service,*args, **kwargs):
-        data_pk=kwargs.get('service')
-        therapist = Therapist.objects.get(therapist_id=data_pk)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        serialized_data = serializer.data
-        return Response(serialized_data)
+    pass
 
-    def handle_exception(self, exc):
-        response = super().handle_exception(exc)       
-        response = {
-                'status': 'error',
-                'status-code': 404,
-                'message': 'Provider  not found',
-            }
-        return Response(response, status=404)
- 
 
 
 

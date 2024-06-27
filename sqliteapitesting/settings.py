@@ -40,8 +40,6 @@ INSTALLED_APPS = [
     'mobile_api_user',
     'Client_provider',
     'django_celery_results',
-
-
 ]
 
 MIDDLEWARE = [
@@ -201,9 +199,7 @@ SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
 }
 AUTHENTICATION_BACKENDS = ['mobile_api_user.authentication_backends.userlogin']
-# AUTHENTICATION_BACKENDS = (
-#     'django.contrib.auth.backends.ModelBackend',
-# )
+
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
