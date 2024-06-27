@@ -223,4 +223,4 @@ CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 CELERY_RESULT_BACKEND = 'django-db'
 
 
-CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net/']
+CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net']

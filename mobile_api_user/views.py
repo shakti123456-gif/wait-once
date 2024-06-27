@@ -12,7 +12,8 @@ from .jwt_token import *
 from django.db.models import Q
 from .authentication import JWTAuthentication
 from .task import add
-
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = ClientDetailSerializer
@@ -259,6 +260,23 @@ class ChildrenListView(generics.ListAPIView):
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
+
+
+@api_view(['GET'])
+def get_application_configuration(request):
+    res= {
+        "status": "success",
+        "statusCode": 200,
+        "message": "Request successful",
+        "data": {
+            "quote": {
+            "message": "Doctors, have a big responsibility to bring smiles to the faces of suffering humanity.",
+            "author": "Narayana Murthy"
+            }
+        }
+    }
+    return JsonResponse(res)
+
 
 
 
