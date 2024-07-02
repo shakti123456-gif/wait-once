@@ -13,23 +13,25 @@ class UserMobileSerializer(serializers.ModelSerializer):
         model = User_mobile
         fields = [
             'firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
-            'ndisNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs'
+            'ndisNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate'
         ]
 
 class ClientSubSerializer(serializers.ModelSerializer):
     dateofBirth = serializers.DateField(input_formats=['%d/%m/%Y'], required=False, source='dateofbirth')
+    # firstName = serializers.CharField(source='first_name', read_only=True)
+    # lastName = serializers.CharField(source='last_name', read_only=True)
 
     class Meta:
         model = Client_sub_view
-        fields = ['first_name', 'last_name', 'dateofBirth', 'Ndisnumber']
+        fields = ['firstName', 'lastName', 'dateofBirth', 'insurance']
 
 class ClientDetailSerializer(serializers.ModelSerializer):
     ClientAuth = UserMobileSerializer(read_only=True)
-    addCaretakerDetail = ClientSubSerializer(many=True, read_only=True, required=False)
+    addChildren = ClientSubSerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model = Client_details_view
-        fields = ['ClientAuth', 'addCaretakerDetail']
+        fields = ['ClientAuth', 'addChildren']
  
 
 class LoginAPIView(serializers.Serializer):

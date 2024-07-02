@@ -33,7 +33,7 @@ class UserRegistrationView(generics.CreateAPIView):
         add_caretaker_detail = []
 
         if client_auth_data.get("signingAs") == "Parent":
-            add_caretaker_data = request.data.pop('addCaretakerDetail', None)
+            add_caretaker_data = request.data.pop('addChildren', None)
             if add_caretaker_data is None:
                 response = {
                     'status': 'error',
@@ -41,7 +41,7 @@ class UserRegistrationView(generics.CreateAPIView):
                     'message': 'Please add Caretaker details',
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
+            
             add_caretaker_serializer = ClientSubSerializer(data=add_caretaker_data, many=True)
             if not add_caretaker_serializer.is_valid():
                 details = [
@@ -76,7 +76,7 @@ class UserRegistrationView(generics.CreateAPIView):
                 add_caretaker_detail = add_caretaker_serializer.save()
 
             client_auth = client_auth_serializer.save()
-            serializer.save(Client_auth=client_auth, Add_Caretaker_Detail=add_caretaker_detail)
+            serializer.save(Client_auth=client_auth, addChildren=add_caretaker_detail)
 
             response = {
                 'status': 'success',
@@ -87,7 +87,6 @@ class UserRegistrationView(generics.CreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
  
-
 
 class Fetch_and_update_user(APIView):
     
@@ -161,7 +160,7 @@ class Loginapi_views_jwt(APIView):
                     'accessToken': str(access),
                     'userId': user_stat.userId,
                     'name': user_stat.firstName,
-                    'email': user_stat.email
+                    'mobileNumber': user_stat.mobileNumber
                 }
                 response = {
                     'status': 'success',
@@ -202,8 +201,8 @@ class LogoutAndBlacklistRefreshTokenForUserView(APIView):
 class UserUpdateView(APIView):
     def put(self, request, *args, **kwargs):
         try:
-            user_name=request.data.get("userName")
-            password=request.data.get("newPassword")
+            user_name=request.data.get("username")
+            password=request.data.get("newpassword")
             user_stat = User_mobile.objects.filter(
                             (Q(mobileNumber=str(user_name)) | Q(email=str(user_name)))
                         ).first()

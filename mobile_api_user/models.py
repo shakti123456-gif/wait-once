@@ -53,7 +53,7 @@ class User_mobile(AbstractBaseUser):
         default='Self',
     )
     userId = models.AutoField(primary_key=True)
-    Client_Sal = models.CharField(max_length=1,null=True,blank=True,default="Mr")
+    Client_Sal = models.CharField(max_length=10,null=True,blank=True,default="Mr")
     firstName = models.CharField(max_length=100,null=True,blank=True)
     lastName = models.CharField(max_length=100,null=True,blank=True)
     dateofBirth = models.DateField(null=True, blank=True)
@@ -66,8 +66,8 @@ class User_mobile(AbstractBaseUser):
     is_staff = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-    createdAt = models.DateTimeField(auto_now_add=True,null=True,blank=True)
-    lastUpdate = models.DateTimeField(auto_now=True,null=True,blank=True)
+    createdAt = models.DateTimeField(null=True,blank=True)
+    lastUpdate = models.DateTimeField(null=True,blank=True)
     password=models.CharField(max_length=15,verbose_name="Password")
 
     objects = UserManager()
@@ -83,7 +83,7 @@ class User_mobile(AbstractBaseUser):
 
 
     def __str__(self):
-        return str(self.mobileNumber)
+        return str(self.firstName)
 
     def has_perm(self, perm, obj=None):
         return self.is_superuser
@@ -96,7 +96,8 @@ class User_mobile(AbstractBaseUser):
 
     def save(self, *args, **kwargs):
         if not self.createdAt:
-            self.Created_At = default_created_at()
+            self.createdAt = datetime.now() + timedelta(hours=5, minutes=30)
+        self.lastUpdate = datetime.now() + timedelta(hours=5, minutes=30)
         super().save(*args, **kwargs)
     
     def get_details(self):
@@ -130,13 +131,13 @@ class Error_handling(models.Model):
 
 class Client_sub_view(models.Model):
     clientSubId=models.AutoField(primary_key=True)
-    first_name=models.CharField(max_length=100)
-    last_name=models.CharField(max_length=100)
+    firstName=models.CharField(max_length=100)
+    lastName=models.CharField(max_length=100)
     dateofbirth=models.DateField(null=True,blank=True) 
-    Ndisnumber=models.CharField(max_length=20,unique=True,null=True,blank=True)
+    insurance=models.CharField(max_length=20,unique=True,null=True,blank=True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return f"{self.firstName} {self.lastName}"
     
     class Meta:
         db_table = ''
@@ -153,10 +154,10 @@ class Client_details_view(Baseclass):
     Client_ID = models.AutoField(primary_key=True)
     Client_auth = models.OneToOneField(User_mobile, on_delete=models.CASCADE)
     Type = models.CharField(max_length=1, choices=Type_CHOICES,null=True,blank=True)
-    Add_Caretaker_Detail=models.ManyToManyField(Client_sub_view)
+    addChildren=models.ManyToManyField(Client_sub_view)
     
     def __str__(self):
-        return f"{self.Client_Number}"
+        return f"{self.Client_ID}"
     
     class Meta:
         db_table = ''

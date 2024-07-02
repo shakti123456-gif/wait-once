@@ -2,6 +2,7 @@ from typing import Iterable
 from django.db import models
 from mobile_api_user.models import User_mobile
 from .BaseUser import Baseclass
+from datetime import datetime ,timedelta
 
 
 
@@ -39,7 +40,8 @@ class Therapist(Baseclass):
     date_field= models.DateTimeField(null=True,blank=True)
 
     def __str__(self):
-        return f"{self.therapist_id}"
+        return f"{self.therapist_auth.firstName}"
+    
 
 class Therapist_booked(models.Model):
     therapist_detail=models.ForeignKey(Therapist,on_delete=models.SET_NULL,null=True,blank=True)
@@ -89,35 +91,69 @@ class Provider_employee(models.Model):
     
 
 class therapist_service(models.Model):
-    Therapist_Name=models.ForeignKey(Therapist,on_delete=models.SET_NULL,null=True,blank=True)
-    service_Name=models.ForeignKey(Service,on_delete=models.SET_NULL,null=True,blank=True) 
-
+    Therapist_Name=models.ForeignKey(Therapist,on_delete=models.CASCADE)
+    service_Name=models.ForeignKey(Service,on_delete=models.CASCADE)
     class Meta:
         unique_together = ('Therapist_Name', 'service_Name')
+    
+    def __str__(self):        
+         return f"{self.Therapist_Name.therapist_auth.firstName} - {self.service_Name.service_name}"
+
 
 
 class Provider(Baseclass):
-    provider_id = models.AutoField(primary_key=True)
-    provider_num = models.PositiveIntegerField()
+    providerId = models.AutoField(primary_key=True)
+    providerNum = models.PositiveIntegerField()
     mobileNumber = models.CharField(max_length=15, null=True, blank=True)
     email = models.CharField(max_length=100, null=True, blank=True)
     ndisNumber = models.CharField(max_length=15, null=True, blank=True)
-    therapist_service_map=models.ManyToManyField(therapist_service)
-    Provider_employers=models.ManyToManyField(Provider_employee)
-    provider_name = models.CharField(max_length=64)
-    provider_type = models.CharField(max_length=16)
+    therapistServicemap=models.ManyToManyField(therapist_service)
+    ProviderEmployers=models.ManyToManyField(Provider_employee)
+    providerName = models.CharField(max_length=64)
+    providerType = models.CharField(max_length=16)
     abn = models.CharField(max_length=16)
-    age_group = models.CharField(max_length=16)
+    ageGroup = models.CharField(max_length=16)
     DVA = models.CharField(max_length=16, blank=True, null=True)
     chain = models.CharField(max_length=16, blank=True, null=True)
-    Provider_locations = models.ManyToManyField(Location)
+    ProviderLocations = models.ManyToManyField(Location)
     phoneNo = models.CharField(max_length=16, blank=True, null=True)
     web = models.URLField(max_length=128, blank=True, null=True)
+
     
     def __str__(self):
-        return self.provider_name
+        return self.providerName
+    
+    @property
+    def therapist_and_service_details(self):
+        provider_data_details = self.therapistServicemap.all()
+        therapist_ids = [entry.Therapist_Name.therapist_id for entry in provider_data_details]
+        service_ids = [entry.service_Name.service_id for entry in provider_data_details]
+        therapist_details = Therapist.objects.filter(therapist_id__in=therapist_ids)
+        service_details = Service.objects.filter(service_id__in=service_ids)
+
+        return therapist_details,service_details
+
+    
+    def get_therapist_services(self, therapist_id=None):
+        provider_data_details = self.therapistServicemap.all()
+   
+        service_details=[]
+        if therapist_id:
+            services = provider_data_details.filter(Therapist_Name__therapist_id=therapist_id)
+            service_ids = [id.service_Name.service_id for id in services]
+            service_details = Service.objects.filter(service_id__in=service_ids)
+        return service_details 
+
+   
+    @property
+    def Provider_locations_add(self):
+        Provider_location=self.ProviderLocations.all()
+        location_all_id=[provider.location_id for provider in Provider_location]
+        location_details = Location.objects.filter(location_id__in=location_all_id)
+        return location_details
 
 
+        
 class Appointment(models.Model):
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
     therapist = models.ForeignKey(Therapist, on_delete=models.CASCADE)
@@ -128,11 +164,53 @@ class Appointment(models.Model):
     Location_id=models.OneToOneField(Location,on_delete=models.CASCADE,null=True,blank=True)
 
     def __str__(self):
-        return f"Appointment with {self.provider.provider_name} at {self.therapy_start_time}"
+        return f"Appointment with {self.provider.providerName} at {self.therapy_start_time}"
 
     def clean(self):
         pass
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # This will call the clean method
+        self.full_clean()  
         super(Appointment, self).save(*args, **kwargs)
+
+class Therapist_working_time(models.Model):
+    therapist_id = models.ForeignKey(Therapist,on_delete=models.CASCADE)
+    startime=models.TimeField()
+    endtime=models.TimeField()
+    createdAt = models.DateTimeField(null=True,blank=True)
+    updateAt = models.DateTimeField(null=True,blank=True)
+
+
+    def __str__(self) -> str:
+        return f"{self.therapist_id.therapist_auth.firstName}   {self.startime}  - {self.endtime}"
+    
+    
+    def save(self, *args, **kwargs):
+        if not self.createdAt:
+            self.createdAt = datetime.now() + timedelta(hours=5, minutes=30)
+        self.updateAt = datetime.now() + timedelta(hours=5, minutes=30)
+        super().save(*args, **kwargs)
+
+
+
+class Therapist_unavailability(models.Model):
+    therapist_id = models.ForeignKey(Therapist,on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date=models.DateField()
+    startime=models.TimeField()
+    endtime=models.TimeField()
+    createdAt = models.DateTimeField(null=True,blank=True)
+    updateAt = models.DateTimeField(null=True,blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.start_date}  - {self.end_date}"
+    
+    def save(self, *args, **kwargs):
+        if not self.createdAt:
+            self.createdAt = datetime.now() + timedelta(hours=5, minutes=30)
+        self.updateAt = datetime.now() + timedelta(hours=5, minutes=30)
+        super().save(*args, **kwargs)
+
+
+
+    

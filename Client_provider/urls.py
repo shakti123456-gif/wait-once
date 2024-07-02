@@ -1,11 +1,13 @@
 from django.urls import path
-from .views import ProviderViewSet
+from .views import ProviderViewSet,TherapistViewSet
 
 
 
 urlpatterns = [
-  # path('provide/',ProviderViewSet.as_view(), name='provider-list'),
-  # path('provide/<int:pk>/', ProviderViewSet.as_view(), name='provider-detail'),
-  # path('provide/serach', ProviderViewSet.as_view(), name='provider-detail'),
+  path('fetch/allprovider',ProviderViewSet.as_view({'get': 'list'}), name='provider-list'),
+  path('provide/search',ProviderViewSet.as_view({'post': 'fetch_providers'}), name='provid-fetch'),
+  path('provide/<int:pk>',ProviderViewSet.as_view({'get': 'details_provider'}), name='provid-details'),
+  path('provide/therapists',ProviderViewSet.as_view({'get': 'details_provider_therapist'}), name='provider-therapist'),
+  path('therapist/details',TherapistViewSet.as_view({'get': 'fetch_therapist'}), name='therapist'),
 
 ]
