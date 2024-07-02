@@ -122,22 +122,27 @@ class TherapistViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self, therapist_id=None):
         try:
-            data={}
             queryset = Therapist.objects.get(therapist_id=therapist_id)
             therapist_working_time = Therapist_working_time.objects.filter(therapist_id=queryset)
-            therapist_data=Therapist_unavailability.objects.filter(therapist_id=queryset)
+            therapist_unava=Therapist_unavailability.objects.filter(therapist_id=queryset)
             therapist_working_time
-            data['Therapist_data']=queryset
-            data['therapist_working_time']=therapist_working_time
+
+            data={
+                "Therapist_data":queryset,
+                "therapist_working_time":therapist_working_time,
+                "therapist_unava":therapist_unava
+                }
+
             return data
         except Therapist.DoesNotExist:
-            raise Exception("Http 404 error")
+            raise Exception("User is not Exist")
 
     @action(detail=True,methods=['get'])
     def fetch_therapist(self,request,pk=None):
         therapistId=request.headers.get("therapistId",None)
         data=self.get_queryset(therapistId)
-        if not therapist_service:
+        print(data)
+        if not data:
             response = {
                 'status': 'error',
                 'statusCode': 404,
