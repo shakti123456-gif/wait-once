@@ -1,8 +1,9 @@
 from typing import Iterable
 from django.db import models
-from mobile_api_user.models import User_mobile
+from mobile_api_user.models import User_mobile,Client_details_view,Client_sub_view
 from .BaseUser import Baseclass
 from datetime import datetime ,timedelta
+
 
 
 
@@ -88,7 +89,12 @@ class Provider_employee(models.Model):
 
     def __str__(self):        
         return f"{self.Users_name} ({self.Usertype})"
-    
+
+    class Meta:
+        db_table = ''
+        managed = True
+        verbose_name = 'Provider employee'
+        verbose_name_plural = 'Provider employees'    
 
 class therapist_service(models.Model):
     Therapist_Name=models.ForeignKey(Therapist,on_delete=models.CASCADE)
@@ -99,7 +105,10 @@ class therapist_service(models.Model):
     def __str__(self):        
          return f"{self.Therapist_Name.therapist_auth.firstName} - {self.service_Name.service_name}"
 
-
+    class Meta:  
+        managed = True
+        verbose_name = 'therapist provide Service'
+        verbose_name_plural = 'therapist provide Service'
 
 class Provider(Baseclass):
     providerId = models.AutoField(primary_key=True)
@@ -155,16 +164,37 @@ class Provider(Baseclass):
 
         
 class Appointment(models.Model):
-    provider = models.ForeignKey(Provider, on_delete=models.CASCADE)
-    therapist = models.ForeignKey(Therapist, on_delete=models.CASCADE)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
-    therapy_start_time = models.DateTimeField(null=True,blank=True)
-    therapy_end_time = models.DateTimeField(blank=True,null=True)
+    clientId = models.IntegerField(null=True,blank=True)
+    childId = models.IntegerField(null=True,blank=True)
+    providerId = models.IntegerField(null=True,blank=True)
+    therapistId = models.IntegerField(null=True,blank=True)
+    serviceId = models.IntegerField( null=True,blank=True)
+    appointmentDate = models.DateField(null=True,blank=True)
+    TherapyTime_start=models.TimeField(null=True,blank=True)
+    TherapyTime_end=models.TimeField(null=True,blank=True)
+    THIRTY_MINUTES = '30 minutes'
+    ONE_HOUR = '1 hour'
+    SESSION_TIME_CHOICES = [
+        (THIRTY_MINUTES, '30 minutes'),
+        (ONE_HOUR, '1 hour'),
+    ]
     Location_details=models.CharField(max_length=250,null=True,blank=True)
-    Location_id=models.OneToOneField(Location,on_delete=models.CASCADE,null=True,blank=True)
+    WAITING = 'waiting'
+    CONFIRMED = 'confirmed'
+    STATUS_CHOICES = [
+        (WAITING, 'Waiting'),
+        (CONFIRMED, 'Confirmed'),
+    ]
+    
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=WAITING,
+    )
+    isconfimed=models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Appointment with {self.provider.providerName} at {self.therapy_start_time}"
+        return f"Appointment {self.pk}  --- {self.appointmentDate}"
 
     def clean(self):
         pass
@@ -172,6 +202,12 @@ class Appointment(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()  
         super(Appointment, self).save(*args, **kwargs)
+    
+    class Meta:
+        managed = True
+        verbose_name = 'Schedules'
+        verbose_name_plural = 'Schedules'
+
 
 class Therapist_working_time(models.Model):
     therapist_id = models.ForeignKey(Therapist,on_delete=models.CASCADE)
@@ -180,6 +216,10 @@ class Therapist_working_time(models.Model):
     createdAt = models.DateTimeField(null=True,blank=True)
     updateAt = models.DateTimeField(null=True,blank=True)
 
+    class Meta:
+        managed = True
+        verbose_name = 'therapist working Time'
+        verbose_name_plural = 'therapist working time'
 
     def __str__(self) -> str:
         return f"{self.therapist_id.therapist_auth.firstName}   {self.startime}  - {self.endtime}"
@@ -211,6 +251,31 @@ class Therapist_unavailability(models.Model):
         self.updateAt = datetime.now() + timedelta(hours=5, minutes=30)
         super().save(*args, **kwargs)
 
+    def check_apointment(self):
+        pass
+
+    class Meta:
+        managed = True
+        verbose_name = 'therapist unavailbilty'
+        verbose_name_plural = 'therapist unavailbilty'
+
+
+class therapistAvailability(models.Model):
+    therapist_id = models.ForeignKey(Therapist,on_delete=models.CASCADE)
+    Provider=models.ForeignKey(Provider,on_delete=models.CASCADE,null=True,blank=True)
+    date=models.DateField()
+    startTime=models.TimeField()
+    endtime=models.TimeField()
+    isAvalable=models.BooleanField()
+    daySchedule=models.TextField()
+
+    class Meta:
+        managed = True
+        verbose_name = 'therapist Availability'
+        verbose_name_plural = 'therapist Availability'
+
+    def __str__(self) -> str:
+        return f"{self.therapist_id.therapist_auth.firstName} - {self.date}   Time Available  {self.startTime}  to   {self.endtime}"
 
 
     

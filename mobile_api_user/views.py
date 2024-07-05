@@ -229,9 +229,8 @@ class UserUpdateView(APIView):
                 'message': 'Internal server error occured',
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-
-
+        
+    
 class ChildrenListView(generics.ListAPIView):
     authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]

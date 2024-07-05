@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import Provider,Therapist,Location,Service,Therapist_working_time
+from .models import Provider,Therapist,Location,Service,Therapist_working_time ,Therapist_unavailability ,Appointment
 
 class ProviderSerializer(serializers.ModelSerializer):
     # providerId=serializers.EmailField(source='provider_id')
@@ -63,3 +63,19 @@ class TherapistWorkingTimeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class Therapistun(serializers.ModelSerializer):
+    class Meta:
+        model= Therapist_unavailability
+        fields = '__all__'
+
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    clientId = serializers.StringRelatedField()
+    childId = serializers.StringRelatedField()
+    provider = serializers.StringRelatedField()
+    therapist = serializers.StringRelatedField()
+    service = serializers.StringRelatedField()
+
+    class Meta:
+        model = Appointment
+        fields = '__all__'
