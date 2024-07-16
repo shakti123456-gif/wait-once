@@ -6,7 +6,7 @@ class Therapist_Details(admin.ModelAdmin):
   
     list_display = ('therapist_auth', 'therapist_num','AlternativeMobileNumber','therapist_id')
    
-    fields = [ 'therapist_auth','therapist_num','service_age_group','therapist_type',
+    fields = [ 'therapist_auth','therapist_num','service_age_group','therapist_type','expirence',
               'dva','independent','multi_provider','multi_Location','web',
               'AlternativeMobileNumber','PermanentAddress1','PermanentAddress2','City',
               'State','PIN','AdditionalInfo1','AdditionalInfo2','AdditionalInfo3','AdditionalInfo4']
@@ -14,7 +14,7 @@ class Therapist_Details(admin.ModelAdmin):
 
 class Provider_Details(admin.ModelAdmin):
   
-    list_display = ('providerName','providerType')
+    list_display = ('providerName','providerType','providerId')
   
     fields = [ 'providerName','providerNum','providerType','therapistServicemap','email','ndisNumber',
               'abn', 'ProviderEmployers','ProviderLocations','ageGroup','web','chain','phoneNo', 
@@ -38,3 +38,4 @@ admin.site.register(Provider_employee)
 admin.site.register(Therapist_working_time)
 admin.site.register(Therapist_unavailability)
 admin.site.register(therapistAvailability)
+admin.site.register(Appointment1)

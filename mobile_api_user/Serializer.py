@@ -18,8 +18,6 @@ class UserMobileSerializer(serializers.ModelSerializer):
 
 class ClientSubSerializer(serializers.ModelSerializer):
     dateofBirth = serializers.DateField(input_formats=['%d/%m/%Y'], required=False, source='dateofbirth')
-    # firstName = serializers.CharField(source='first_name', read_only=True)
-    # lastName = serializers.CharField(source='last_name', read_only=True)
 
     class Meta:
         model = Client_sub_view
@@ -32,7 +30,16 @@ class ClientDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client_details_view
         fields = ['ClientAuth', 'addChildren']
- 
+
+class ClientDetailsViewSerializer(serializers.ModelSerializer):
+    addChildren = serializers.SerializerMethodField()
+    Client_auth = serializers.StringRelatedField()  # or serializers.PrimaryKeyRelatedField()
+
+    class Meta:
+        model = Client_details_view
+        fields = ['Client_ID', 'Client_auth', 'Type', 'addChildren']
+        
+         
 
 class LoginAPIView(serializers.Serializer):
     username = serializers.CharField(max_length=200)

@@ -155,6 +155,32 @@ class Client_details_view(Baseclass):
     Client_auth = models.OneToOneField(User_mobile, on_delete=models.CASCADE)
     Type = models.CharField(max_length=1, choices=Type_CHOICES,null=True,blank=True)
     addChildren=models.ManyToManyField(Client_sub_view)
+
+    def count_empty_fields(self):
+        empty_fields = 0
+        total_fields = 0
+
+        data=self.Client_auth.signingAs
+        if not data=="Self":
+            if self.addChildren.exists():
+                empty_fields += 1
+            total_fields += 1
+
+        for field in Baseclass._meta.get_fields():
+            if isinstance(field, models.Field):  # Ensure we are only checking fields
+                value = getattr(self, field.name, None)
+                if not value in [None, '']:
+                    empty_fields += 1
+                total_fields += 1
+
+
+        return empty_fields, total_fields
+
+    def percentage_empty_fields(self):
+        empty_fields, total_fields = self.count_empty_fields()
+        percentage_empty = (empty_fields / total_fields) * 100
+        return percentage_empty
+
     
     def __str__(self):
         return f"{self.Client_ID}"

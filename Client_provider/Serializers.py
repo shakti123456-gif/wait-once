@@ -16,8 +16,8 @@ class therapistSerializer(serializers.ModelSerializer):
     therapistFullname = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        model = Provider
-        fields = ["therapistId", "therapistFullname", "specialization"]
+        model = Therapist
+        fields = ["therapistId", "therapistFullname", "specialization","expirence"]
 
     def get_therapistFullname(self, obj):
         therapist_auth = obj.therapist_auth  
@@ -79,3 +79,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = '__all__'
+
+
+class AppointmentDeleteSerializer(serializers.Serializer):
+    appointmentDate = serializers.DateField(input_formats=['%d-%m-%Y'])
+    appointmentId = serializers.IntegerField()
+

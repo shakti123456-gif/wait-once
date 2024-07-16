@@ -1,7 +1,7 @@
 from mobile_api_user.authentication import JWTAuthentication
 from rest_framework import generics
-from .models import Provider,Therapist,Service,therapist_service,Therapist_working_time,Therapist_unavailability,therapistAvailability,Appointment
-from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,AppointmentSerializer
+from .models import Provider,Therapist,Service,therapist_service,Therapist_working_time,Therapist_unavailability,therapistAvailability,Appointment,Appointment1
+from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,AppointmentSerializer,AppointmentDeleteSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
@@ -211,8 +211,17 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
         if therapist_avail:
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
-                                                                      date=date_appointment).first()
+                                                                      date=date_appointment,Provider__providerId=providerDetail).first()
+            
             if therapist_avail_date:
+                # if therapist_avail_date.endtime :
+                #     time1 = datetime.strptime(therapist_avail_date.endtime, '%H:%M:%S').time()
+                #     time2 = datetime.strptime(therapy_time_end, '%H:%M:%S').time()
+                #     if time2<time1:
+                #         print("raise error ")
+                # if therapist_avail_date.endtime < therapy_time_end:
+                #     return HttpResponse("Appointment time is exceed")
+                
                 appointments = Appointment.objects.filter(
                         appointmentDate=date_appointment, 
                         therapistId=therapist_avail_date.therapist_id.therapist_id,isconfimed=True)
@@ -228,12 +237,9 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
                         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
                   
-                    # therapy_time_start   not between appointment.TherapyTime_start   and appointmente.TherapyTime_end
-                    # appointment.TherapyTime_start   not between appointment.TherapyTime_start   and appointmente.TherapyTime_end
             else:
                 return HttpResponse("Therapist data is not updated from database")
             
-            print(request.user.userId)                        
         
             provider=Provider.objects.filter(providerId=providerDetail).first()
             service=Service.objects.filter(service_id=service_id).first()
@@ -251,9 +257,102 @@ class Client_booking_Details(viewsets.ModelViewSet):
             )
             new_appointment.save()
         
-        return HttpResponse("Appointmentbooking is done ")
-   
+        return HttpResponse("Appointment booking is done ")
     
+    @action(detail=True,methods=['post'])
+    def create_booking1(self,request,pk=None):
+        data=request.data
+        therapist_avail=data.get("therapist",None)
+        date_appointment=data.get("appointmentDate",None)
+        therapy_time_start = data.get("TherapyTime_start",None)
+        providerDetail=data.get("provider")
+        service_id=data.get("service")
+        session_time=data.get("session-time","")
+        try:
+            therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M:%S")
+        except ValueError:
+            return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
+        try:
+            session_hours, session_minutes = map(int, session_time.split(":"))
+            session_duration = timedelta(hours=session_hours, minutes=session_minutes)
+        except ValueError:
+            return JsonResponse({"error": "Invalid session duration format"}, status=400)
+        
+        therapy_time_end = therapy_time_start + session_duration
+        therapy_time_end_str = therapy_time_end.strftime("%H:%M:%S")
+
+        if therapist_avail:
+            therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
+                                                                   date=date_appointment,Provider__providerId=providerDetail).first()
+        
+            if therapist_avail_date:
+                appointments = Appointment1.objects.filter(
+                        appointmentDate=date_appointment, 
+                        therapistId=therapist_avail_date.therapist_id,isconfimed=True)
+        
+                if appointments:
+                    for apointment in appointments:
+                        appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
+                        appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
+
+                    # Calculate new appointment start and end times as timedelta durations
+                        new_appointment_start = timedelta(hours=therapy_time_start.hour, minutes=therapy_time_start.minute)
+                        new_appointment_end = new_appointment_start + session_duration
+
+                    # Check if new appointment overlaps with any existing appointment
+                        if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
+                            return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
+            else:        
+                return HttpResponse("Therapist data is not updated from database or Provider data")
+            provider=Provider.objects.filter(providerId=providerDetail).first()
+            service=Service.objects.filter(service_id=service_id).first()
+            new_appointment = Appointment1(
+                clientId=request.user,
+                providerId=provider,
+                therapistId=therapist_avail_date.therapist_id,
+                serviceId=service,
+                appointmentDate=date_appointment,
+                TherapyTime_start=therapy_time_start,
+                TherapyTime_end=therapy_time_end,
+                Location_details=data.get("Location_details"),
+                status="confirmed",
+                isconfimed=True
+            )
+            new_appointment.save()
+        
+        return HttpResponse("Appointment booking is done ")
     
+    @action(detail=False,methods=['post'])
+    def delete_user_apointment(self,request):
+        serializer = AppointmentDeleteSerializer(data=request.data)
+        if serializer.is_valid():
+            date_str = serializer.validated_data['appointmentDate']
+            appointment_id = serializer.validated_data['appointmentId']
+            try:
+                appointment = Appointment1.objects.get(appointmentDate=date_str, id=appointment_id)
+                appointment.delete()
+                response = {
+                    'status': 'Success',
+                    'statusCode': 200,
+                    'message': 'Appointment successfully deleted',
+                }
+                return Response(response, status=status.HTTP_204_NO_CONTENT)
+            except Appointment1.DoesNotExist:
+                response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': 'Appointment not found',
+                }
+                
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True,methods=['post'])
+    def Get_user_Apointment_detail(self):
+        pass
+
+
+
 
 

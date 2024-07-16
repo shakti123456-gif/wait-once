@@ -38,6 +38,7 @@ class Therapist(Baseclass):
     multi_provider = models.BooleanField(default=False)
     multi_Location = models.ManyToManyField(Location)
     web = models.URLField(blank=True, null=True)
+    expirence=models.PositiveIntegerField(default=1)
     date_field= models.DateTimeField(null=True,blank=True)
 
     def __str__(self):
@@ -184,6 +185,7 @@ class Appointment(models.Model):
     STATUS_CHOICES = [
         (WAITING, 'Waiting'),
         (CONFIRMED, 'Confirmed'),
+        ('Reschedule','reschedule'),
     ]
     
     status = models.CharField(
@@ -207,6 +209,54 @@ class Appointment(models.Model):
         managed = True
         verbose_name = 'Schedules'
         verbose_name_plural = 'Schedules'
+
+
+
+class Appointment1(models.Model):
+    clientId = models.ForeignKey(User_mobile, on_delete=models.CASCADE,null=True, blank=True)
+    childId = models.ForeignKey(Client_sub_view, on_delete=models.CASCADE, null=True, blank=True)
+    providerId = models.ForeignKey(Provider, on_delete=models.CASCADE, null=True, blank=True)
+    therapistId = models.ForeignKey(Therapist, on_delete=models.CASCADE, null=True, blank=True)
+    serviceId = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
+    appointmentDate = models.DateField(null=True, blank=True)
+    TherapyTime_start = models.TimeField(null=True, blank=True)
+    TherapyTime_end = models.TimeField(null=True, blank=True)
+    THIRTY_MINUTES = '30 minutes'
+    ONE_HOUR = '1 hour'
+    SESSION_TIME_CHOICES = [
+        (THIRTY_MINUTES, '30 minutes'),
+        (ONE_HOUR, '1 hour'),
+    ]
+    Location_details=models.CharField(max_length=250,null=True,blank=True)
+    WAITING = 'waiting'
+    CONFIRMED = 'confirmed'
+    STATUS_CHOICES = [
+        (WAITING, 'Waiting'),
+        (CONFIRMED, 'Confirmed'),
+    ]
+    
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=WAITING,
+    )
+    isconfimed=models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Appointment {self.pk}  --- {self.appointmentDate}"
+
+    def clean(self):
+        pass
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  
+        super(Appointment1, self).save(*args, **kwargs)
+    
+    class Meta:
+        managed = True
+        verbose_name = 'Apointments'
+        verbose_name_plural = 'Apointments'
+
 
 
 class Therapist_working_time(models.Model):

@@ -117,9 +117,13 @@ class Fetch_and_update_user(APIView):
                 'message': 'Please pass userId in header',
                 }
             user_object = User_mobile.objects.get(userId=user_Id)
-            Profile_percentage=user_object.get_details()
+            data_obj=Client_details_view.objects.get(Client_auth=user_object)
+            percentage=data_obj.percentage_empty_fields()
             serializer = UserMobileSerializerfetch(user_object)
-            return Response(serializer.data)
+            response_data = serializer.data
+            percentage = round(percentage, 2)
+            response_data['percentage']=percentage
+            return Response(response_data)
         except User_mobile.DoesNotExist:
             response = {
                 'status': 'error',
@@ -134,6 +138,8 @@ class Fetch_and_update_user(APIView):
                 'message': str(e),
             }
             return Response(response, status=400)
+        
+
         
 class Loginapi_views_jwt(APIView):
     serializer_class = LoginAPIView
@@ -150,7 +156,6 @@ class Loginapi_views_jwt(APIView):
             user_stat = User_mobile.objects.filter(
                             (Q(mobileNumber=str(user_name)) | Q(email=str(user_name))) & Q(password=password)
                         ).first()
-            
             if user_stat:
                 refresh = CustomRefreshToken.for_user(user_stat)
                 access = CustomAccessToken.for_user(user_stat)
