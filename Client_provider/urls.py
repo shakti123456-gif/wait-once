@@ -11,7 +11,7 @@ urlpatterns = [
   path('therapist/details',TherapistViewSet.as_view({'get': 'fetch_therapist'}), name='therapist'),
   path('client/booking',Client_booking_Details.as_view({'post': 'create_booking'}), name='client-booking'),
   path('client/booking/details',Client_booking_Details.as_view({'post': 'create_booking1'}), name='client-booking'),
-  path('cancel/user/apointment',Client_booking_Details.as_view({'post': 'delete_user_apointment'}), name='delete-appointment'),
-  path('user/apointment/detail',Client_booking_Details.as_view({'get': 'Get_user_Apointment_detail'}), name='get-user-detail'),
+  path('cancel/user/appointment',Client_booking_Details.as_view({'post': 'delete_user_apointment'}), name='delete-appointment'),
+  path('user/appointment/detail',Client_booking_Details.as_view({'get': 'Get_user_Apointment_detail'}), name='get-user-detail'),
   # path('reshdule/user/<int:pk>/booking/<int:pk>',Client_booking_Details.as_view({'post': 'create_booking1'}), name='client-booking'),
 ]

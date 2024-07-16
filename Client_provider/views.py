@@ -1,7 +1,7 @@
 from mobile_api_user.authentication import JWTAuthentication
 from rest_framework import generics
 from .models import Provider,Therapist,Service,therapist_service,Therapist_working_time,Therapist_unavailability,therapistAvailability,Appointment,Appointment1
-from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,AppointmentSerializer,AppointmentDeleteSerializer
+from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,AppointmentSerializer,AppointmentSerializerfetch
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
@@ -324,7 +324,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
     
     @action(detail=False,methods=['post'])
     def delete_user_apointment(self,request):
-        serializer = AppointmentDeleteSerializer(data=request.data)
+        serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
             date_str = serializer.validated_data['appointmentDate']
             appointment_id = serializer.validated_data['appointmentId']
@@ -342,17 +342,30 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     'status': 'error',
                     'statusCode': 404,
                     'message': 'Appointment not found',
-                }
-                
+                }     
                 return Response(response, status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True,methods=['post'])
-    def Get_user_Apointment_detail(self):
-        pass
-
-
-
+    @action(detail=False,methods=['get'])
+    def Get_user_Apointment_detail(self,request,pk=None):
+        serializer = AppointmentSerializer(data=request.data)
+        if serializer.is_valid():
+            date_str = serializer.validated_data['appointmentDate']
+            appointment_id = serializer.validated_data['appointmentId']
+            if pk: 
+                data_obj=Appointment1.objects.get(clientId=request.user,appointmentDate=date_str, id=appointment_id)
+                serializer = AppointmentSerializerfetch(data_obj)
+                return Response(serializer.data)
+            else:
+                print(request.user.userId)
+                data_obj=Appointment1.objects.filter(clientId__userId=request.user.userId,appointmentDate=date_str, id=appointment_id).all()
+                if data_obj.exists():
+                    serializer = AppointmentSerializerfetch(data_obj,many=True)
+                    return Response(serializer.data)
+                else:
+                    return Response({"detail": "No appointments found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
+               
 
 

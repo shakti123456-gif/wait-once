@@ -157,8 +157,8 @@ class Client_details_view(Baseclass):
     addChildren=models.ManyToManyField(Client_sub_view)
 
     def count_empty_fields(self):
-        empty_fields = 0
-        total_fields = 0
+        empty_fields = 10
+        total_fields = 10
 
         data=self.Client_auth.signingAs
         if not data=="Self":

@@ -81,7 +81,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AppointmentDeleteSerializer(serializers.Serializer):
+class AppointmentSerializer(serializers.Serializer):
     appointmentDate = serializers.DateField(input_formats=['%d-%m-%Y'])
     appointmentId = serializers.IntegerField()
+
+class AppointmentSerializerfetch(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = '__all__'
 
