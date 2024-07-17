@@ -393,7 +393,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                         'status': 'error',
                         'statusCode': 404,
-                        'message': 'No appointments found for the given criteria',
+                        'message': 'No appointments found for the given Date',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
                 else:
@@ -409,7 +409,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                         'status': 'error',
                         'statusCode': 404,
-                        'message': 'No appointments found for the given criteria',
+                        'message': 'No upcoming appointment found',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
                 else:
@@ -421,7 +421,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                         'status': 'error',
                         'statusCode': 404,
-                        'message': 'No appointments found for the given criteria',
+                        'message': 'No upcoming found for the given criteria',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
                 else:
