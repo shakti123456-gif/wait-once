@@ -38,8 +38,14 @@ class ClientDetailsViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client_details_view
         fields = ['Client_ID', 'Client_auth', 'Type', 'addChildren']
-        
-         
+
+    def get_addChildren(self, obj):
+        children = obj.addChildren.all()
+        if children.exists():
+            return ClientSubSerializer(children, many=True).data
+        return None  # or []
+
+ 
 
 class LoginAPIView(serializers.Serializer):
     username = serializers.CharField(max_length=200)
@@ -51,6 +57,19 @@ class UserMobileSerializerfetch(serializers.ModelSerializer):
         model = User_mobile
         fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
                   'ndisNumber', 'communicationPreference', 'signingAs']
+        
+class ClientDetailsViewSerializers(serializers.ModelSerializer):
+    user_mobile = UserMobileSerializerfetch(read_only=True)
+    
+    class Meta:
+        model = Client_details_view
+        fields ='__all__'
+        
+class UserMobileSerializerfetchdata(serializers.ModelSerializer):    
+    class Meta:
+        model = User_mobile
+        fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
+                  'ndisNumber']
         
 
 # class UserMobileSerializerfetch(serializers.ModelSerializer):    

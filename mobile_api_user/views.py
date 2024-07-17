@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404,HttpResponse
 from rest_framework.permissions import IsAuthenticated
-from .Serializer import LoginAPIView ,UserMobileSerializer,ClientDetailSerializer,ClientSubSerializer,UserMobileSerializerfetch
+from .Serializer import LoginAPIView ,UserMobileSerializer,ClientDetailSerializer,ClientSubSerializer,UserMobileSerializerfetch,Client_details_view
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
 from django.db.models import Q
@@ -121,7 +121,7 @@ class Fetch_and_update_user(APIView):
             percentage=data_obj.percentage_empty_fields()
             serializer = UserMobileSerializerfetch(user_object)
             response_data = serializer.data
-            percentage = round(percentage, 2)
+            percentage = round(percentage)
             response_data['percentage']=percentage
             return Response(response_data)
         except User_mobile.DoesNotExist:

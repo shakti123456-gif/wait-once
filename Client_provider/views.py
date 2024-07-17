@@ -302,8 +302,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     # Check if new appointment overlaps with any existing appointment
                         if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
                             return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
-            else:        
-                return HttpResponse("Therapist data is not updated from database or Provider data")
+            else:
+                response = {
+                    'status': 'Error',
+                    'statusCode': 400,
+                    'message': 'Therapist Data not found',
+                }        
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+                
             provider=Provider.objects.filter(providerId=providerDetail).first()
             service=Service.objects.filter(service_id=service_id).first()
             new_appointment = Appointment1(
@@ -319,8 +325,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 isconfimed=True
             )
             new_appointment.save()
-        
-        return HttpResponse("Appointment booking is done ")
+            response_data = {
+            'status': 'success',
+            'statusCode': 200,
+            'message':"Your  Appointment is Confirmed"
+            }
+            # email trigger
+
+            return Response(response_data, status=status.HTTP_200_OK)
     
     @action(detail=False,methods=['post'])
     def delete_user_apointment(self,request):
@@ -348,24 +360,102 @@ class Client_booking_Details(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False,methods=['get'])
-    def Get_user_Apointment_detail(self,request,pk=None):
+    def Get_user_Apointment_detail(self,request):
         serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
             date_str = serializer.validated_data['appointmentDate']
             appointment_id = serializer.validated_data['appointmentId']
-            if pk: 
+            try: 
                 data_obj=Appointment1.objects.get(clientId=request.user,appointmentDate=date_str, id=appointment_id)
                 serializer = AppointmentSerializerfetch(data_obj)
                 return Response(serializer.data)
-            else:
-                print(request.user.userId)
-                data_obj=Appointment1.objects.filter(clientId__userId=request.user.userId,appointmentDate=date_str, id=appointment_id).all()
-                if data_obj.exists():
-                    serializer = AppointmentSerializerfetch(data_obj,many=True)
-                    return Response(serializer.data)
-                else:
-                    return Response({"detail": "No appointments found."}, status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
-               
+            except Exception as e:
+                    response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': 'Appointment not found',
+                    }     
+                    return Response(response, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True,methods=['post'])
+    def Get_user_upcoming_apointment(self,request):
+        try:
+            data_check=request.data
+            date_str=data_check.get("date")
+            upcomingappointment=data_check.get("upcomingappointment")
+            if date_str:
+                date_obj = datetime.strptime(date_str, '%d-%m-%Y')
+                formatted_date_str = date_obj.strftime('%Y-%m-%d')
+                data_obj=Appointment1.objects.filter(clientId=request.user,appointmentDate=formatted_date_str).all()
+                serializer = AppointmentSerializerfetch(data_obj,many=True)
+                return Response(serializer.data)
+            elif upcomingappointment:
+                t1 = datetime.now()
+                time_delta = timedelta(hours=5, minutes=30)
+                new_time = t1 + time_delta
+                data_obj=Appointment1.objects.filter(clientId=request.user,appointmentDate__gt=new_time).all()
+                serializer = AppointmentSerializerfetch(data_obj,many=True)
+                return Response(serializer.data)
+            else:
+                data_obj=Appointment1.objects.filter(clientId=request.user).all()
+                serializer = AppointmentSerializerfetch(data_obj,many=True)
+                return Response(serializer.data)
+            
+        except Exception as e:
+            response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': 'Some internal issue',
+                    }     
+            return Response(response, status=status.HTTP_404_NOT_FOUND)            
+    
+    @action(detail=True,methods=['post'])
+    def reshedule_apointment(self,request):
+        try:
+            data_check=request.data
+            date_str=data_check.get("appointmentDate")
+            date_obj = datetime.strptime(date_str, '%d-%m-%Y')
+            date_corr = date_obj.strftime('%Y-%m-%d')
+            data_new_appointment=data_check.get("resheduleAppointmentDate")
+            appointment_id = data_check['appointmentId']
+            appointment = Appointment1.objects.get(clientId=request.user,appointmentDate=date_corr, id=appointment_id)
+            therapist_avail_date=therapistAvailability.objects.filter(therapist_id=appointment.therapistId,
+                                                                   date=data_new_appointment,Provider=appointment.providerId).first()
+            
+            if therapist_avail_date:
+                appointments = Appointment1.objects.filter(
+                        appointmentDate=data_new_appointment, 
+                        therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=appointment.TherapyTime_start)
+
+                if appointments:
+                    response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': 'slot is already booked',
+                    }     
+                    return Response(response, status=status.HTTP_404_NOT_FOUND)
+                            
+                appointment.appointmentDate=data_new_appointment
+                appointment.save()
+                return Response(response, status=status.HTTP_404_NOT_FOUND)                 
+            else:
+                response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': 'please update therapist data',
+                    }     
+                return Response(response, status=status.HTTP_404_NOT_FOUND)            
+
+        except Exception as e :
+            response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': str(e),
+                    }     
+            return Response(response, status=status.HTTP_404_NOT_FOUND)   
+
+                    
+
+               
 

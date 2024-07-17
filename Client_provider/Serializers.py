@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
-from .models import Provider,Therapist,Location,Service,Therapist_working_time ,Therapist_unavailability ,Appointment
+from .models import Provider,Therapist,Location,Service,Therapist_working_time ,Therapist_unavailability ,Appointment1,Appointment
+from mobile_api_user.Serializer import UserMobileSerializerfetchdata
 
 class ProviderSerializer(serializers.ModelSerializer):
     # providerId=serializers.EmailField(source='provider_id')
@@ -63,13 +64,13 @@ class TherapistWorkingTimeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class Therapistun(serializers.ModelSerializer):
+class Therapist(serializers.ModelSerializer):
     class Meta:
         model= Therapist_unavailability
         fields = '__all__'
 
 
-class AppointmentSerializer(serializers.ModelSerializer):
+class AppointmentSerializer1(serializers.ModelSerializer):
     clientId = serializers.StringRelatedField()
     childId = serializers.StringRelatedField()
     provider = serializers.StringRelatedField()
@@ -86,7 +87,14 @@ class AppointmentSerializer(serializers.Serializer):
     appointmentId = serializers.IntegerField()
 
 class AppointmentSerializerfetch(serializers.ModelSerializer):
+    clientId = UserMobileSerializerfetchdata(read_only=True)
+    providerId = ProviderSerializer(read_only=True)
+    therapistId = therapistSerializer(read_only=True)
+    serviceId = ServiceSerializerdetail(read_only=True)
+    locationId = LocationSerializerdetail(read_only=True)
+
+
     class Meta:
-        model = Appointment
+        model = Appointment1
         fields = '__all__'
 

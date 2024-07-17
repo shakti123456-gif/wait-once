@@ -185,7 +185,7 @@ class Appointment(models.Model):
     STATUS_CHOICES = [
         (WAITING, 'Waiting'),
         (CONFIRMED, 'Confirmed'),
-        ('Reschedule','reschedule'),
+        ('reschedule','reschedule'),
     ]
     
     status = models.CharField(
