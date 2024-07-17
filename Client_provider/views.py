@@ -238,7 +238,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
                   
             else:
-                return HttpResponse("Therapist data is not updated from database")
+                return JsonResponse({"error": "tharapist data is not updated"}, status=409)
             
         
             provider=Provider.objects.filter(providerId=providerDetail).first()
@@ -409,7 +409,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                         'status': 'error',
                         'statusCode': 404,
-                        'message': 'No upcoming appointment found',
+                        'message': 'No upcoming appointment is found',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
                 else:
