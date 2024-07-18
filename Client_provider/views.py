@@ -211,17 +211,11 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
         if therapist_avail:
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
-                                                                      date=date_appointment,Provider__providerId=providerDetail).first()
+                                                                      date=date_appointment,Provider__providerId=providerDetail).all()
             
+            # error
+
             if therapist_avail_date:
-                # if therapist_avail_date.endtime :
-                #     time1 = datetime.strptime(therapist_avail_date.endtime, '%H:%M:%S').time()
-                #     time2 = datetime.strptime(therapy_time_end, '%H:%M:%S').time()
-                #     if time2<time1:
-                #         print("raise error ")
-                # if therapist_avail_date.endtime < therapy_time_end:
-                #     return HttpResponse("Appointment time is exceed")
-                
                 appointments = Appointment.objects.filter(
                         appointmentDate=date_appointment, 
                         therapistId=therapist_avail_date.therapist_id.therapist_id,isconfimed=True)
@@ -236,7 +230,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 # Check if new appointment overlaps with any existing appointment
                     if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
                         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
-                  
             else:
                 return JsonResponse({"error": "tharapist data is not updated"}, status=409)
             
@@ -269,7 +262,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
         service_id=data.get("service")
         session_time=data.get("session-time","")
         try:
-            therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M:%S")
+            therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M").time()
         except ValueError:
             return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
         try:
@@ -278,30 +271,43 @@ class Client_booking_Details(viewsets.ModelViewSet):
         except ValueError:
             return JsonResponse({"error": "Invalid session duration format"}, status=400)
         
-        therapy_time_end = therapy_time_start + session_duration
-        therapy_time_end_str = therapy_time_end.strftime("%H:%M:%S")
-
         if therapist_avail:
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
                                                                    date=date_appointment,Provider__providerId=providerDetail).first()
-        
+            
             if therapist_avail_date:
-                appointments = Appointment1.objects.filter(
-                        appointmentDate=date_appointment, 
-                        therapistId=therapist_avail_date.therapist_id,isconfimed=True)
-        
-                if appointments:
-                    for apointment in appointments:
-                        appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
-                        appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
+                data_avalable_solts=therapist_avail_date.available_slots
+                for time_slot in data_avalable_solts:
+                    time1,time2=time_slot.split("-")
+                    timeslot1 = datetime.strptime(time1, "%H:%M").time()
+                    timeslot2 = datetime.strptime(time2, "%H:%M").time()
+                    if therapy_time_start==timeslot1:
+                        available=True
+                        break
+                       
+                if available:
+                    appointments = Appointment1.objects.filter(
+                            appointmentDate=date_appointment, 
+                            therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1)
+            
+                    if appointments:
+                        response = {
+                            'status': 'error',
+                            'statusCode': 404,
+                            'message': 'slot was already booked ',
+                        }
+                        return Response(response, status=status.HTTP_404_NOT_FOUND)
+                    # for apointment in appointments:
+                    #     appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
+                    #     appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
 
-                    # Calculate new appointment start and end times as timedelta durations
-                        new_appointment_start = timedelta(hours=therapy_time_start.hour, minutes=therapy_time_start.minute)
-                        new_appointment_end = new_appointment_start + session_duration
+                    # # Calculate new appointment start and end times as timedelta durations
+                    #     new_appointment_start = timedelta(hours=therapy_time_start.hour, minutes=therapy_time_start.minute)
+                    #     new_appointment_end = new_appointment_start + session_duration
 
-                    # Check if new appointment overlaps with any existing appointment
-                        if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
-                            return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
+                    # # Check if new appointment overlaps with any existing appointment
+                    #     if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
+                    #         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
             else:
                 response = {
                     'status': 'Error',
@@ -319,7 +325,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 serviceId=service,
                 appointmentDate=date_appointment,
                 TherapyTime_start=therapy_time_start,
-                TherapyTime_end=therapy_time_end,
+                # TherapyTime_end=therapy_time_end,
                 Location_details=data.get("Location_details"),
                 status="confirmed",
                 isconfimed=True

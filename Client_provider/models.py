@@ -40,6 +40,7 @@ class Therapist(Baseclass):
     web = models.URLField(blank=True, null=True)
     expirence=models.PositiveIntegerField(default=1)
     date_field= models.DateTimeField(null=True,blank=True)
+    
 
     def __str__(self):
         return f"{self.therapist_auth.firstName}"
@@ -317,7 +318,7 @@ class therapistAvailability(models.Model):
     startTime=models.TimeField()
     endtime=models.TimeField()
     isAvalable=models.BooleanField()
-    daySchedule=models.TextField()
+    available_slots = models.JSONField(default=list, blank=True)
 
     class Meta:
         managed = True
