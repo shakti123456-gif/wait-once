@@ -1,6 +1,6 @@
 from mobile_api_user.authentication import JWTAuthentication
 from rest_framework import generics
-from .models import Provider,Therapist,Service,therapist_service,Therapist_working_time,Therapist_unavailability,therapistAvailability,Appointment,Appointment1
+from .models import Provider,Therapist,Service,therapist_service,Therapist_working_time,Location,therapistAvailability,Appointment,Appointment1
 from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,AppointmentSerializer,AppointmentSerializerfetch
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,6 +11,8 @@ from django.http import HttpResponse
 from mobile_api_user.models import Client_details_view,Client_sub_view
 from datetime import datetime, timedelta
 from django.http import JsonResponse, HttpResponse
+import json
+from .Serializers import TherapistAvailSerializer ,clientBooking
 
 
 class ProviderViewSet(viewsets.ModelViewSet):
@@ -42,15 +44,27 @@ class ProviderViewSet(viewsets.ModelViewSet):
                 }
             return Response(response, status=status.HTTP_404_NOT_FOUND)            
         serializer=ProviderSerializer(provider,many=True)
-        return Response(serializer.data)
+        response = {
+            'status': 'success',
+            'statusCode': 200,
+            'message': 'Request successful',
+            'data': serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
     
   
     @action(detail=True,methods=['get'])
     def list(self,request):
         provider_data=Provider.objects.all()
         serializer=ProviderSerializer(provider_data,many=True)
-        return Response(serializer.data)
-
+        response = {
+            'status': 'success',
+            'statusCode': 200,
+            'message': 'Request successful',
+            'data': serializer.data
+        }
+        return Response(response, status=status.HTTP_200_OK)
+    
     @action(detail=True,methods=['get'])
     def details_provider(self,request,pk=None):
         try:
@@ -72,7 +86,13 @@ class ProviderViewSet(viewsets.ModelViewSet):
             serialized_data['locations'] = location_serializer.data
             serialized_data['therapist'] = therapist_serializer.data
             serialized_data['services'] = service_serializer.data
-            return Response(serialized_data)
+            response = {
+            'status': 'success',
+            'statusCode': 200,
+            'message': 'Request successful',
+            'data': serialized_data
+            }
+            return Response(response, status=status.HTTP_200_OK)
         except Exception as e:
             response = {
                 'status': 'error',
@@ -134,7 +154,8 @@ class TherapistViewSet(viewsets.ModelViewSet):
             details_service=[e.service_Name.service_id for e in data_therapist]
             service_data=Service.objects.filter(service_id__in=details_service)
             providers_data = Provider.objects.filter(therapistServicemap__in=data_therapist)
-        
+
+            
             data={
                 "Therapist_data":queryset,
                 "service_data":service_data,
@@ -169,6 +190,7 @@ class TherapistViewSet(viewsets.ModelViewSet):
         therapist_data_serializer = therapistSerializer(data.get("Therapist_data", None))
         provider_data_serializer = ProviderSerializer(data.get("providers", None), many=True)
 
+        
         response_data = {
             'status': 'success',
             'statusCode': 200,
@@ -178,6 +200,65 @@ class TherapistViewSet(viewsets.ModelViewSet):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
+    @action(detail=True,methods=['get'])
+    def therapist_availablity(self, request, pk=None):
+        try:
+            serializer = TherapistAvailSerializer(data=request.data)
+            if serializer.is_valid():
+                data_avail = serializer.validated_data.get("availablityDate")
+                therapist_data = therapistAvailability.objects.get(date=data_avail)
+                slots = therapist_data.available_slots
+                response_data = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'therapistdata': {
+                        "id": therapist_data.therapist_id.therapist_id,
+                        "name": therapist_data.therapist_id.therapist_auth.firstName,
+                        "slots": slots
+                    }
+                }
+                return JsonResponse(response_data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            response_data = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': "Therapist not available on that day"
+                }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True,methods=['get'])
+    def therapist_availablity_booked(self, request, pk=None):
+        try:
+            serializer = TherapistAvailSerializer(data=request.data)
+            if serializer.is_valid():
+                data_avail = serializer.validated_data.get("availablityDate")
+                therapist_data = therapistAvailability.objects.get(date=data_avail)
+                slots = therapist_data.available_slots
+                response_data = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'therapistdata': {
+                        "id": therapist_data.therapist_id.therapist_id,
+                        "name": therapist_data.therapist_id.therapist_auth.firstName,
+                        "slots": slots
+                    }
+                }
+                return JsonResponse(response_data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            response_data = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': "Therapist not available on that day"
+                }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
+        
+
     
 
 class Client_booking_Details(viewsets.ModelViewSet):
@@ -257,46 +338,60 @@ class Client_booking_Details(viewsets.ModelViewSet):
         data=request.data
         therapist_avail=data.get("therapist",None)
         date_appointment=data.get("appointmentDate",None)
-        therapy_time_start = data.get("TherapyTime_start",None)
+        therapy_time_start = data.get("therapyTimeStart",None)
         providerDetail=data.get("provider")
         service_id=data.get("service")
-        session_time=data.get("session-time","")
+        session_time=data.get("sessionTime","")
+        LocationId=data.get("LocationId")
         try:
-            therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M").time()
+            date_appointment = datetime.strptime(date_appointment, '%d-%m-%Y').strftime('%Y-%m-%d')
+        except:
+            return JsonResponse({"error": "please enter format day/month/year"}, status=400)
+
+
+        try:
+            therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M:%S").time()
         except ValueError:
             return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
-        try:
-            session_hours, session_minutes = map(int, session_time.split(":"))
-            session_duration = timedelta(hours=session_hours, minutes=session_minutes)
-        except ValueError:
-            return JsonResponse({"error": "Invalid session duration format"}, status=400)
+        # try:
+        #     session_hours, session_minutes = map(int, session_time.split(":"))
+        #     session_duration = timedelta(hours=session_hours, minutes=session_minutes)
+        # except ValueError:
+        #     return JsonResponse({"error": "Invalid session duration format"}, status=400)
         
         if therapist_avail:
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
                                                                    date=date_appointment,Provider__providerId=providerDetail).first()
-            
+            available=False
             if therapist_avail_date:
                 data_avalable_solts=therapist_avail_date.available_slots
                 for time_slot in data_avalable_solts:
                     time1,time2=time_slot.split("-")
-                    timeslot1 = datetime.strptime(time1, "%H:%M").time()
-                    timeslot2 = datetime.strptime(time2, "%H:%M").time()
+                    timeslot1 = datetime.strptime(time1, "%H:%M:%S").time()
+                    timeslot2 = datetime.strptime(time2, "%H:%M:%S").time()
                     if therapy_time_start==timeslot1:
                         available=True
                         break
-                       
+                status_check="confirmed" 
                 if available:
                     appointments = Appointment1.objects.filter(
                             appointmentDate=date_appointment, 
                             therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1)
             
-                    if appointments:
+                    if appointments.exists():
                         response = {
                             'status': 'error',
                             'statusCode': 404,
-                            'message': 'slot was already booked ',
+                            'message': 'slot is already booked',
                         }
                         return Response(response, status=status.HTTP_404_NOT_FOUND)
+                else:
+                    response = {
+                            'status': 'error',
+                            'statusCode': 404,
+                            'message': 'slot not found',
+                        }
+                    return Response(response, status=status.HTTP_404_NOT_FOUND)
                     # for apointment in appointments:
                     #     appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
                     #     appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
@@ -318,6 +413,8 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 
             provider=Provider.objects.filter(providerId=providerDetail).first()
             service=Service.objects.filter(service_id=service_id).first()
+            location=Location.objects.filter(location_id=LocationId).first()
+
             new_appointment = Appointment1(
                 clientId=request.user,
                 providerId=provider,
@@ -325,18 +422,25 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 serviceId=service,
                 appointmentDate=date_appointment,
                 TherapyTime_start=therapy_time_start,
-                # TherapyTime_end=therapy_time_end,
-                Location_details=data.get("Location_details"),
-                status="confirmed",
+                TherapyTime_end=timeslot2,
+                LocationId=location,
+                status=status_check,
                 isconfimed=True
             )
             new_appointment.save()
-            response_data = {
-            'status': 'success',
-            'statusCode': 200,
-            'message':"Your  Appointment is Confirmed"
-            }
-            # email trigger
+            if status_check=="confirmed":
+                response_data = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message':"Your Appointment is Confirmed"
+                }
+            else:
+                response_data = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message':"Your Appointment is in waiting list"
+                }
+
 
             return Response(response_data, status=status.HTTP_200_OK)
     
@@ -344,10 +448,9 @@ class Client_booking_Details(viewsets.ModelViewSet):
     def delete_user_apointment(self,request):
         serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
-            date_str = serializer.validated_data['appointmentDate']
             appointment_id = serializer.validated_data['appointmentId']
             try:
-                appointment = Appointment1.objects.get(appointmentDate=date_str, id=appointment_id)
+                appointment = Appointment1.objects.get(id=appointment_id)
                 appointment.delete()
                 response = {
                     'status': 'Success',
@@ -369,17 +472,24 @@ class Client_booking_Details(viewsets.ModelViewSet):
     def Get_user_Apointment_detail(self,request):
         serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
-            date_str = serializer.validated_data['appointmentDate']
             appointment_id = serializer.validated_data['appointmentId']
             try: 
-                data_obj=Appointment1.objects.get(clientId=request.user,appointmentDate=date_str, id=appointment_id)
+                data_obj=Appointment1.objects.get(clientId=request.user,id=appointment_id)
+                print(data_obj)
                 serializer = AppointmentSerializerfetch(data_obj)
-                return Response(serializer.data)
+        
+                response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Request successful',
+                    'data': serializer.data
+                }
+                return Response(response, status=status.HTTP_200_OK)
             except Exception as e:
                     response = {
                     'status': 'error',
                     'statusCode': 404,
-                    'message': 'Appointment not found',
+                    'message': str(e),
                     }     
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -402,8 +512,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'message': 'No appointments found for the given Date',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
-                else:
-                    return Response(serializer.data, status=status.HTTP_200_OK)
                 
             elif upcomingappointment:
                 t1 = datetime.now()
@@ -418,8 +526,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'message': 'No upcoming appointment is found',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
-                else:
-                    return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 data_obj=Appointment1.objects.filter(clientId=request.user).all()
                 serializer = AppointmentSerializerfetch(data_obj,many=True)
@@ -430,8 +536,13 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'message': 'No upcoming found for the given criteria',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
-                else:
-                    return Response(serializer.data, status=status.HTTP_200_OK)
+            response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Request successful',
+                    'data': serializer.data
+                }
+            return Response(response, status=status.HTTP_200_OK)  
         except Exception as e:
             response = {
                     'status': 'error',
@@ -448,26 +559,65 @@ class Client_booking_Details(viewsets.ModelViewSet):
             date_obj = datetime.strptime(date_str, '%d-%m-%Y')
             date_corr = date_obj.strftime('%Y-%m-%d')
             data_new_appointment=data_check.get("resheduleAppointmentDate")
-            appointment_id = data_check['appointmentId']
+            new_obj = datetime.strptime(data_new_appointment, '%d-%m-%Y')
+            data_new_appointment = new_obj.strftime('%Y-%m-%d')
+            appointment_id = data_check.get('appointmentId')
+            resheduletime=data_check.get('resheduletime')
             appointment = Appointment1.objects.get(clientId=request.user,appointmentDate=date_corr, id=appointment_id)
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id=appointment.therapistId,
                                                                    date=data_new_appointment,Provider=appointment.providerId).first()
             
+            try:
+                therapy_time_start = datetime.strptime(resheduletime, "%H:%M:%S").time()
+            except ValueError:
+                return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
+            
             if therapist_avail_date:
-                appointments = Appointment1.objects.filter(
+                available=False
+                data_avalable_slots=therapist_avail_date.available_slots
+                if not data_avalable_slots:
+                    return Exception("Therapist slot is not found")
+
+                for time_slot in data_avalable_slots:
+                    time1,time2=time_slot.split("-")
+                    timeslot1 = datetime.strptime(time1, "%H:%M:%S").time()
+                    timeslot2 = datetime.strptime(time2, "%H:%M:%S").time()
+                    if therapy_time_start==timeslot1:
+                        available=True
+                        break
+                
+                if available:
+                    if resheduletime :
+                        appointments = Appointment1.objects.filter(
+                            appointmentDate=data_new_appointment, 
+                            therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=therapy_time_start)
+
+                    else: 
+                        appointments = Appointment1.objects.filter(
                         appointmentDate=data_new_appointment, 
                         therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=appointment.TherapyTime_start)
+                else:
+                    response = {
+                        'status': 'error',
+                        'statusCode': 404,
+                        'message': 'slots not found ',
+                    }     
+                    return Response(response, status=status.HTTP_404_NOT_FOUND)
 
                 if appointments:
                     response = {
-                    'status': 'error',
-                    'statusCode': 404,
-                    'message': 'slot is already booked',
+                        'status': 'error',
+                        'statusCode': 404,
+                        'message': 'slot is already booked',
                     }     
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
-                            
+                        
                 appointment.appointmentDate=data_new_appointment
+                if therapy_time_start:
+                    appointment.TherapyTime_start=therapy_time_start
+                appointment.status="reshudule"
                 appointment.save()
+
                 return Response(response, status=status.HTTP_404_NOT_FOUND)                 
             else:
                 response = {
@@ -479,13 +629,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
         except Exception as e :
             response = {
-                    'status': 'error',
+                    'status': 'Error code',
                     'statusCode': 404,
                     'message': str(e),
                     }     
             return Response(response, status=status.HTTP_404_NOT_FOUND)   
 
-                    
+                      
 
                
 
+ 

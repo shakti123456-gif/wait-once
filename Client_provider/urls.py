@@ -9,6 +9,7 @@ urlpatterns = [
   path('provide/<int:pk>',ProviderViewSet.as_view({'get': 'details_provider'}), name='provid-details'),
   path('provide/therapists',ProviderViewSet.as_view({'get': 'details_provider_therapist'}), name='provider-therapist'),
   path('therapist/details',TherapistViewSet.as_view({'get': 'fetch_therapist'}), name='therapist'),
+  path('therapist/availablity',TherapistViewSet.as_view({'get': 'therapist_availablity'}), name='therapist'),
   path('client/booking',Client_booking_Details.as_view({'post': 'create_booking'}), name='client-booking'),
   path('client/booking/details',Client_booking_Details.as_view({'post': 'create_booking1'}), name='client-booking'),
   path('cancel/user/appointment',Client_booking_Details.as_view({'post': 'delete_user_apointment'}), name='delete-appointment'),

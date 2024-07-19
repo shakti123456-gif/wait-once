@@ -219,6 +219,7 @@ class Appointment1(models.Model):
     providerId = models.ForeignKey(Provider, on_delete=models.CASCADE, null=True, blank=True)
     therapistId = models.ForeignKey(Therapist, on_delete=models.CASCADE, null=True, blank=True)
     serviceId = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
+    LocationId = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
     appointmentDate = models.DateField(null=True, blank=True)
     TherapyTime_start = models.TimeField(null=True, blank=True)
     TherapyTime_end = models.TimeField(null=True, blank=True)
@@ -234,6 +235,7 @@ class Appointment1(models.Model):
     STATUS_CHOICES = [
         (WAITING, 'Waiting'),
         (CONFIRMED, 'Confirmed'),
+        ('reshudule', 'reshudule'),
     ]
     
     status = models.CharField(

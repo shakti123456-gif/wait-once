@@ -11,6 +11,9 @@ class ProviderSerializer(serializers.ModelSerializer):
         model = Provider
         fields = ["providerId","providerName","contactInfo"]
 
+
+
+
 class therapistSerializer(serializers.ModelSerializer):
     therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
     specialization = serializers.CharField(source='therapist_type', read_only=True)
@@ -26,6 +29,22 @@ class therapistSerializer(serializers.ModelSerializer):
             return f"{therapist_auth.firstName} {therapist_auth.lastName}"
         return "Not added"
 
+
+class therapistSerializerAppointment(serializers.ModelSerializer):
+    therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
+    therapistFullname = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Therapist
+        fields = ["therapistId", "therapistFullname"]
+
+
+    def get_therapistFullname(self, obj):
+        therapist_auth = obj.therapist_auth  
+        if therapist_auth:
+            return f"{therapist_auth.firstName} {therapist_auth.lastName}"
+        return "Not added"
+
 class ServiceSerializerdetail(serializers.ModelSerializer):
     serviceId = serializers.IntegerField(source='service_id', read_only=True)
     serviceName = serializers.CharField(source='service_name', read_only=True)
@@ -34,6 +53,15 @@ class ServiceSerializerdetail(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ['serviceId','serviceName','serviceType','serviceDescription']
+
+class ServiceSerializerdetailAppointment(serializers.ModelSerializer):
+    serviceId = serializers.IntegerField(source='service_id', read_only=True)
+    serviceName = serializers.CharField(source='service_name', read_only=True)
+    serviceType = serializers.CharField(source='service_type', read_only=True)
+
+    class Meta:
+        model = Service
+        fields = ['serviceId','serviceName','serviceType']
 
 class LocationSerializerdetail(serializers.ModelSerializer):
     locationId = serializers.IntegerField(source='location_id', read_only=True)
@@ -83,18 +111,26 @@ class AppointmentSerializer1(serializers.ModelSerializer):
 
 
 class AppointmentSerializer(serializers.Serializer):
-    appointmentDate = serializers.DateField(input_formats=['%d-%m-%Y'])
     appointmentId = serializers.IntegerField()
 
 class AppointmentSerializerfetch(serializers.ModelSerializer):
+    # AppointmentId = serializers.IntegerField(source='id', read_only=True)
     clientId = UserMobileSerializerfetchdata(read_only=True)
     providerId = ProviderSerializer(read_only=True)
-    therapistId = therapistSerializer(read_only=True)
+    therapistId = therapistSerializerAppointment(read_only=True)
     serviceId = ServiceSerializerdetail(read_only=True)
-    locationId = LocationSerializerdetail(read_only=True)
-
+    LocationId = LocationSerializerdetail(read_only=True)
 
     class Meta:
         model = Appointment1
         fields = '__all__'
+
+
+class TherapistAvailSerializer(serializers.Serializer):
+    availablityDate = serializers.DateField(input_formats=['%d-%m-%Y'])
+
+
+class clientBooking(serializers.Serializer):
+    availablityDate = serializers.DateField(input_formats=['%d-%m-%Y'])
+
 

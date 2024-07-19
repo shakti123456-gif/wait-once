@@ -123,7 +123,13 @@ class Fetch_and_update_user(APIView):
             response_data = serializer.data
             percentage = round(percentage)
             response_data['percentage']=percentage
-            return Response(response_data)
+            response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Request successful',
+                    'data': response_data
+                }
+            return Response(response, status=status.HTTP_200_OK)
         except User_mobile.DoesNotExist:
             response = {
                 'status': 'error',
