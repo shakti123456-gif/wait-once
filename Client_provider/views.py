@@ -223,12 +223,11 @@ class TherapistViewSet(viewsets.ModelViewSet):
                             "endTime": time2,
                             "isBooked": is_booked
                         })
-            
                 response_data = {
                     'status': 'success',
                     'statusCode': 200,
-                    'therapistdata': {
-                        "data": available_slots
+                    'data': {
+                        "availableSlots":available_slots
                     }
                 }
                 return JsonResponse(response_data)
