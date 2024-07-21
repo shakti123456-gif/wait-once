@@ -196,6 +196,7 @@ class Appointment(models.Model):
     )
     isconfimed=models.BooleanField(default=False)
 
+
     def __str__(self):
         return f"Appointment {self.pk}  --- {self.appointmentDate}"
 
@@ -321,6 +322,7 @@ class therapistAvailability(models.Model):
     endtime=models.TimeField()
     isAvalable=models.BooleanField()
     available_slots = models.JSONField(default=list, blank=True)
+    availableSlotsData=models.TextField(null=True,blank=True)
 
     class Meta:
         managed = True

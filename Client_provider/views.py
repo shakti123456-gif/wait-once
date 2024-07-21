@@ -202,31 +202,45 @@ class TherapistViewSet(viewsets.ModelViewSet):
         return Response(response_data, status=status.HTTP_200_OK)
     @action(detail=True,methods=['get'])
     def therapist_availablity(self, request, pk=None):
-        try:
+        if True:
             serializer = TherapistAvailSerializer(data=request.data)
             if serializer.is_valid():
                 data_avail = serializer.validated_data.get("availablityDate")
                 therapist_data = therapistAvailability.objects.get(date=data_avail)
                 slots = therapist_data.available_slots
+                data_objects=Appointment1.objects.filter(appointmentDate=data_avail).all()
+                booked_slots = []
+                available_slots=[]
+            
+                for data_iter in data_objects:
+                    booked_slots.append(str(data_iter.TherapyTime_start))
+
+                for slot in slots:
+                    time1, time2 = slot.split("-")
+                    is_booked = str(time1) in booked_slots
+                    available_slots.append({
+                            "startTime": time1,
+                            "endTime": time2,
+                            "isBooked": is_booked
+                        })
+            
                 response_data = {
                     'status': 'success',
                     'statusCode': 200,
                     'therapistdata': {
-                        "id": therapist_data.therapist_id.therapist_id,
-                        "name": therapist_data.therapist_id.therapist_auth.firstName,
-                        "slots": slots
+                        "data": available_slots
                     }
                 }
                 return JsonResponse(response_data)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            response_data = {
-                    'status': 'error',
-                    'statusCode': 404,
-                    'message': "Therapist not available on that day"
-                }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        # except Exception as e:
+        #     response_data = {
+        #             'status': 'error',
+        #             'statusCode': 404,
+        #             'message': "Therapist not available on that day"
+        #         }
+        #     return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True,methods=['get'])
     def therapist_availablity_booked(self, request, pk=None):
@@ -236,6 +250,7 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 data_avail = serializer.validated_data.get("availablityDate")
                 therapist_data = therapistAvailability.objects.get(date=data_avail)
                 slots = therapist_data.available_slots
+
                 response_data = {
                     'status': 'success',
                     'statusCode': 200,
@@ -256,10 +271,6 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
-
-        
-
-    
 
 class Client_booking_Details(viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
@@ -475,7 +486,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
             appointment_id = serializer.validated_data['appointmentId']
             try: 
                 data_obj=Appointment1.objects.get(clientId=request.user,id=appointment_id)
-                print(data_obj)
                 serializer = AppointmentSerializerfetch(data_obj)
         
                 response = {
@@ -555,15 +565,12 @@ class Client_booking_Details(viewsets.ModelViewSet):
     def reshedule_apointment(self,request):
         try:
             data_check=request.data
-            date_str=data_check.get("appointmentDate")
-            date_obj = datetime.strptime(date_str, '%d-%m-%Y')
-            date_corr = date_obj.strftime('%Y-%m-%d')
             data_new_appointment=data_check.get("resheduleAppointmentDate")
             new_obj = datetime.strptime(data_new_appointment, '%d-%m-%Y')
             data_new_appointment = new_obj.strftime('%Y-%m-%d')
             appointment_id = data_check.get('appointmentId')
             resheduletime=data_check.get('resheduletime')
-            appointment = Appointment1.objects.get(clientId=request.user,appointmentDate=date_corr, id=appointment_id)
+            appointment = Appointment1.objects.get(clientId=request.user, id=appointment_id)
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id=appointment.therapistId,
                                                                    date=data_new_appointment,Provider=appointment.providerId).first()
             
@@ -605,6 +612,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
 
                 if appointments:
+                    print(appointments)
                     response = {
                         'status': 'error',
                         'statusCode': 404,
@@ -615,8 +623,16 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 appointment.appointmentDate=data_new_appointment
                 if therapy_time_start:
                     appointment.TherapyTime_start=therapy_time_start
+                    appointment.TherapyTime_end=timeslot2
                 appointment.status="reshudule"
                 appointment.save()
+
+                response = {
+                        'status': '200',
+                        'statusCode': 200,
+                        'message': 'your Appointment successfully reschedule',
+                    }     
+                   
 
                 return Response(response, status=status.HTTP_404_NOT_FOUND)                 
             else:
