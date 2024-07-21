@@ -292,7 +292,6 @@ def show(request):
 
 
 class Fetch_and_update_user_web(APIView):
-    
     def get_object(self,**kwargs):
         try:
             phonenumber= kwargs.get("number",None)
@@ -340,7 +339,37 @@ class Fetch_and_update_user_web(APIView):
                 'message': str(e),
             }
             return Response(response, status=400)
+    
+    def post(self,request,*args, **kwargs):
+        if not isinstance(request.data, list):
+            return Response({'error': 'Expected a list of items'}, status=status.HTTP_400_BAD_REQUEST)
         
+        serializer = UserMobileSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'Success': 'User data successfully created'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self,request,*args, **kwargs):
+        if not isinstance(request.data, list):
+            return Response({'error': 'Expected a list of items'}, status=status.HTTP_400_BAD_REQUEST)
+        errors = []
+        for user_data in request.data:
+            try:
+                user = User_mobile.objects.get(pk=user_data['userId'])
+                serializer = UserMobileSerializer(user, data=user_data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    errors.append({'userId': user_data['userId'], 'errors': serializer.errors})
+            except User_mobile.DoesNotExist:
+                errors.append({'userId': user_data['userId'], 'errors': 'User does not exist'})
+
+        if errors:
+            return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({'status': 'Bulk update successful'}, status=status.HTTP_200_OK)
+
 
 
 

@@ -667,9 +667,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
             return Response(response, status=status.HTTP_404_NOT_FOUND)   
         
 
-class TherapistViewSet(viewsets.ModelViewSet):
-    queryset = Therapist.objects.all()
-    serializer_class = therapistSerializer
 
 
 
