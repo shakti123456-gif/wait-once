@@ -58,9 +58,9 @@ class UserMobileSerializerfetch(serializers.ModelSerializer):
         fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
                   'ndisNumber', 'communicationPreference', 'signingAs']
         
-class ClientDetailsViewSerializers(serializers.ModelSerializer):
+class ClientDetailsViewSerializers_percentage(serializers.ModelSerializer):
     user_mobile = UserMobileSerializerfetch(read_only=True)
-    
+
     class Meta:
         model = Client_details_view
         fields ='__all__'
@@ -77,8 +77,6 @@ class UserMobileSerializerfetchdata(serializers.ModelSerializer):
 #         model = Client_sub_view
 #         fields = ['first_name', 'last_name', 'dateofBirth', 'Ndisnumber']
         
-
-
 
 
         

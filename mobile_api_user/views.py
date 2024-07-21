@@ -287,28 +287,66 @@ def get_application_configuration(request):
     return JsonResponse(res)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def show(request):
     pass
+
+
+class Fetch_and_update_user_web(APIView):
+    
+    def get_object(self,**kwargs):
+        try:
+            phonenumber= kwargs.get("number",None)
+            if  phonenumber is None:
+                raise Exception("")
+            return User_mobile.objects.get(mobileNumber=phonenumber)
+        except User_mobile.DoesNotExist:
+            response={
+                'status': 'error',
+                'status-code': 401,
+                'message': 'Invalid credentials',
+            }
+            raise Http404(response)
+        
+    def get(self,request,*args, **kwargs):
+        try:
+            user_Id = request.headers.get('userId',None)
+            if user_Id is None:
+                response = {
+                'status': 'error',
+                'status-code': 404,
+                'message': 'Please pass userId in header',
+                }
+            user_object = User_mobile.objects.all()
+            serializer = UserMobileSerializerfetch(user_object,many=True)
+            response_data = serializer.data
+            response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Request successful',
+                    'data': response_data
+                }
+            return Response(response, status=status.HTTP_200_OK)
+        except User_mobile.DoesNotExist:
+            response = {
+                'status': 'error',
+                'status-code': 404,
+                'message': 'User not found',
+            }
+            return Response(response, status=404)
+        except Exception as e:
+            response = {
+                'status': 'error',
+                'status-code': 400,
+                'message': str(e),
+            }
+            return Response(response, status=400)
+        
+
+
+
+
+
+
+
+
+

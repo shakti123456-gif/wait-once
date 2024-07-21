@@ -12,7 +12,7 @@ from mobile_api_user.models import Client_details_view,Client_sub_view
 from datetime import datetime, timedelta
 from django.http import JsonResponse, HttpResponse
 import json
-from .Serializers import TherapistAvailSerializer ,clientBooking
+from .Serializers import TherapistAvailSerializer ,clientBooking,TherapistSerializerweb
 
 
 class ProviderViewSet(viewsets.ModelViewSet):
@@ -202,7 +202,7 @@ class TherapistViewSet(viewsets.ModelViewSet):
         return Response(response_data, status=status.HTTP_200_OK)
     @action(detail=True,methods=['get'])
     def therapist_availablity(self, request, pk=None):
-        if True:
+        try:
             serializer = TherapistAvailSerializer(data=request.data)
             if serializer.is_valid():
                 data_avail = serializer.validated_data.get("availablityDate")
@@ -233,13 +233,13 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 return JsonResponse(response_data)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # except Exception as e:
-        #     response_data = {
-        #             'status': 'error',
-        #             'statusCode': 404,
-        #             'message': "Therapist not available on that day"
-        #         }
-        #     return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            response_data = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': "Therapist not available on that day"
+                }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True,methods=['get'])
     def therapist_availablity_booked(self, request, pk=None):
@@ -269,6 +269,22 @@ class TherapistViewSet(viewsets.ModelViewSet):
                     'message': "Therapist not available on that day"
                 }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+        
+from rest_framework.decorators import api_view
+@api_view(['GET', 'POST'])
+def therapist_list(request):
+    if request.method == 'GET':
+        therapists = Therapist.objects.all()
+        serializer = therapistSerializer(therapists, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer =therapistSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 class Client_booking_Details(viewsets.ModelViewSet):
@@ -649,9 +665,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     'message': str(e),
                     }     
             return Response(response, status=status.HTTP_404_NOT_FOUND)   
+        
+
+class TherapistViewSet(viewsets.ModelViewSet):
+    queryset = Therapist.objects.all()
+    serializer_class = therapistSerializer
 
 
-                      
+
 
                
 

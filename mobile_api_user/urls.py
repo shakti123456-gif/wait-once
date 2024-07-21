@@ -15,6 +15,7 @@ urlpatterns = [
     path('privacy-policy/', TemplateView.as_view(template_name='privacy.html'), name='privacy'),
     path('user/children-details', ChildrenListView.as_view(),name="fetch_child_data"),
     path('mobile-app-configuration',get_application_configuration,name="get_applications"),
+    path('fetchapi/web',Fetch_and_update_user_web.as_view(),name="web-fetch"),
     path('delay/',show,name="show-error")
 ]
 

@@ -134,3 +134,17 @@ class clientBooking(serializers.Serializer):
     availablityDate = serializers.DateField(input_formats=['%d-%m-%Y'])
 
 
+class TherapistSerializerweb(serializers.ModelSerializer):
+    therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
+    specialization = serializers.CharField(source='therapist_type', read_only=True)
+    therapistFullname = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Therapist
+        fields = ["therapistId", "therapistFullname", "specialization","expirence"]
+
+    def get_therapistFullname(self, obj):
+        therapist_auth = obj.therapist_auth  
+        if therapist_auth:
+            return f"{therapist_auth.firstName} {therapist_auth.lastName}"
+        return "Not added"
