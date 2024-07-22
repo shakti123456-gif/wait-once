@@ -619,7 +619,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
 
                 if appointments:
-                    print(appointments)
                     response = {
                         'status': 'error',
                         'statusCode': 404,
@@ -639,8 +638,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'statusCode': 200,
                         'message': 'your Appointment successfully reschedule',
                     }     
-                   
-
+                
                 return Response(response, status=status.HTTP_404_NOT_FOUND)                 
             else:
                 response = {
