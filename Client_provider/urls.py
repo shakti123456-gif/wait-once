@@ -1,9 +1,5 @@
 from django.urls import path,include
-from .views import ProviderViewSet,TherapistViewSet,Client_booking_Details,therapist_list
-from rest_framework.routers import DefaultRouter
-
-
-
+from .views import ProviderViewSet,TherapistViewSet,Client_booking_Details
 
 
 urlpatterns = [
@@ -19,7 +15,7 @@ urlpatterns = [
   path('user/appointment/detail/byId',Client_booking_Details.as_view({'get': 'Get_user_Apointment_detail'}), name='get-user-detail'),
   path('user/allappointments',Client_booking_Details.as_view({'get': 'Get_user_upcoming_apointment'}), name='get-user-detail'),
   path('user/reshedule/apointment',Client_booking_Details.as_view({'get': 'reshedule_apointment'}), name='reshedule_apointment'),
-  path('therapists/', therapist_list, name='therapist_list'),
+
   # path('therapists/<int:pk>/', therapist_detail, name='therapist_detail'),
 
   

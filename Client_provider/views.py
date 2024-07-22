@@ -107,11 +107,16 @@ class ProviderViewSet(viewsets.ModelViewSet):
         data_pd_id=request.headers.get("providerId","None")
         therapist_pd_id=request.headers.get("therapistId","None")
         try:
-            print(therapist_pd_id,data_pd_id)
             provider_data=Provider.objects.filter(providerId=data_pd_id).first()
             data = provider_data.get_therapist_services(therapist_pd_id)
             service_serializer = ServiceSerializerdetail(data, many=True)
-            return Response(service_serializer.data)     
+            response = {
+                'status': 'success',
+                'statusCode': 200,
+                'message': 'Request successful',
+                'data': service_serializer.data
+                }
+            return Response(response, status=status.HTTP_200_OK)   
         except Exception as e:
             response = {
                 'status': 'error',
@@ -155,10 +160,9 @@ class TherapistViewSet(viewsets.ModelViewSet):
             service_data=Service.objects.filter(service_id__in=details_service)
             providers_data = Provider.objects.filter(therapistServicemap__in=data_therapist)
 
-            
             data={
-                "Therapist_data":queryset,
-                "service_data":service_data,
+                "TherapistData":queryset,
+                "serviceData":service_data,
                 "providers":providers_data
                 }
 
@@ -186,16 +190,16 @@ class TherapistViewSet(viewsets.ModelViewSet):
             }
             return Response(response, status=status.HTTP_404_NOT_FOUND)
         
-        service_serializer = ServiceSerializerdetail(data.get("service_data", None), many=True)
-        therapist_data_serializer = therapistSerializer(data.get("Therapist_data", None))
+        service_serializer = ServiceSerializerdetail(data.get("serviceData", None), many=True)
+        therapist_data_serializer = therapistSerializer(data.get("TherapistData", None))
         provider_data_serializer = ProviderSerializer(data.get("providers", None), many=True)
 
         
         response_data = {
             'status': 'success',
             'statusCode': 200,
-            'Therapist_data': therapist_data_serializer.data,
-            'service_data': service_serializer.data,
+            'TherapistData': therapist_data_serializer.data,
+            'serviceData': service_serializer.data,
             'providers': provider_data_serializer.data,
         }
 
@@ -270,20 +274,8 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         
-from rest_framework.decorators import api_view
-@api_view(['GET', 'POST'])
-def therapist_list(request):
-    if request.method == 'GET':
-        therapists = Therapist.objects.all()
-        serializer = therapistSerializer(therapists, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        serializer =therapistSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    
 
 
 

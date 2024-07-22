@@ -5,6 +5,7 @@ class CustomAccessToken(AccessToken):
     def for_user(cls, user):
         token = super().for_user(user)
         token['mobile_number'] = user.mobileNumber
+        # role id 
         return token
 
 class CustomRefreshToken(RefreshToken):
@@ -12,6 +13,7 @@ class CustomRefreshToken(RefreshToken):
     def or_user(cls, user):
         token = super().for_user(user)
         token['mobile_number'] = user.mobileNumber
+        # role id 
         return token
     
 
