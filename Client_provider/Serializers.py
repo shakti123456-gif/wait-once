@@ -122,7 +122,7 @@ class RescheduleAppointmentSerializer(serializers.Serializer):
 
 
 class AppointmentSerializerfetch(serializers.ModelSerializer):
-    AppointmentId= serializers.IntegerField(source='id', read_only=True)
+    appointmentId= serializers.IntegerField(source='id', read_only=True)
     clientData = UserMobileSerializerfetchdata(read_only=True)
     providerData = ProviderSerializer(read_only=True)
     therapistData = therapistSerializerAppointment(read_only=True)
@@ -134,7 +134,7 @@ class AppointmentSerializerfetch(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment1
-        fields = ['AppointmentId','clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapyStartTime','therapyEndTime','status','isConfimed']
+        fields = ['appointmentId','clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapyStartTime','therapyEndTime','status','isConfimed']
 
 
 class TherapistAvailSerializer(serializers.Serializer):
