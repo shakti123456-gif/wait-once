@@ -630,19 +630,16 @@ class Client_booking_Details(viewsets.ModelViewSet):
     @action(detail=True,methods=['post'])
     def reshedule_apointment(self,request):
         try:
-
             serializer = RescheduleAppointmentSerializer(data=request.data)
             if serializer.is_valid():
+
                 validated_data = serializer.validated_data
+                print(validated_data)
                 
                 # Extract data from validated data
                 appointment_id = validated_data['appointmentId']
                 reschedule_date = validated_data['rescheduleAppointmentDate']
-                reschedule_time = validated_data['rescheduleTime']
-        
-     
-                new_obj = datetime.strptime(reschedule_date, '%d-%m-%Y')
-                reschedule_date = new_obj.strftime('%Y-%m-%d')
+                resheduletime = validated_data['rescheduleTime']
             else:
                 response = {
                     'status': 'error',
@@ -654,18 +651,17 @@ class Client_booking_Details(viewsets.ModelViewSet):
             appointment = Appointment1.objects.get(clientId=request.user, id=appointment_id)
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id=appointment.therapistId,
                                                                    date=reschedule_date,Provider=appointment.providerId).first()
-            
             try:
-                therapy_time_start = datetime.strptime(reschedule_time, "%H:%M:%S").time()
+                therapy_time_start = resheduletime
             except ValueError:
-                return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
+                return JsonResponse({"error": "Invalid time format for TherapyTime_start"})
             
             if therapist_avail_date:
                 available=False
                 data_avalable_slots=therapist_avail_date.available_slots
                 if not data_avalable_slots:
                     return Exception("Therapist slot is not found")
-
+                print("--------------------------------------")
                 for time_slot in data_avalable_slots:
                     time1,time2=time_slot.split("-")
                     timeslot1 = datetime.strptime(time1, "%H:%M:%S").time()
@@ -677,12 +673,12 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 if available:
                     if resheduletime :
                         appointments = Appointment1.objects.filter(
-                            appointmentDate=data_new_appointment, 
+                            appointmentDate=reschedule_date, 
                             therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=therapy_time_start)
 
                     else: 
                         appointments = Appointment1.objects.filter(
-                        appointmentDate=data_new_appointment, 
+                        appointmentDate=reschedule_date, 
                         therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=appointment.TherapyTime_start)
                 else:
                     response = {
@@ -700,7 +696,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     }     
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
                         
-                appointment.appointmentDate=data_new_appointment
+                appointment.appointmentDate=reschedule_date
                 if therapy_time_start:
                     appointment.TherapyTime_start=therapy_time_start
                     appointment.TherapyTime_end=timeslot2
