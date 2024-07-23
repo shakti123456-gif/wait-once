@@ -146,7 +146,58 @@ class ProviderViewSet(viewsets.ModelViewSet):
                 'message': str(e),
                 }
             return Response(response, status=status.HTTP_404_NOT_FOUND)    
-
+    
+    @action(detail=False, methods=['get', 'post'])
+    def details_locations(self, request):
+        if request.method == 'GET':
+            Providerid = request.headers.get("Providerid", None)
+            provider_data=Provider.objects.filter(providerId=Providerid).first()
+            if not provider_data:
+                response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': 'Provider user Id is not exit',
+                }
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+            locations_data=provider_data.Provider_locations_add
+            location_serializer = LocationSerializerdetail(locations_data, many=True)
+            response = {
+                'status': 'success',
+                'statusCode': 200,
+                'message': 'Request successful',
+                'data': location_serializer.data
+                }
+            return Response(response, status=status.HTTP_200_OK) 
+        
+        if request.method == 'POST':
+            # i want add data
+            return Response({'message': 'POST request received'})
+        
+    @action(detail=False, methods=['get', 'post'])
+    def details_employee(self, request):
+        if request.method == 'GET':
+            Providerid = request.headers.get("Providerid", None)
+            provider_data=Provider.objects.filter(providerId=Providerid).first()
+            if not provider_data:
+                response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': 'Provider user Id is not exit',
+                }
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+            locations_data=provider_data.Provider_locations_add
+            location_serializer = LocationSerializerdetail(locations_data, many=True)
+            response = {
+                'status': 'success',
+                'statusCode': 200,
+                'message': 'Request successful',
+                'data': location_serializer.data
+                }
+            return Response(response, status=status.HTTP_200_OK) 
+        
+        if request.method == 'POST':
+            # i want add data
+            return Response({'message': 'POST request received'})
 
 
 class TherapistViewSet(viewsets.ModelViewSet):

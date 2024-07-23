@@ -162,6 +162,7 @@ class Provider(Baseclass):
         location_all_id=[provider.location_id for provider in Provider_location]
         location_details = Location.objects.filter(location_id__in=location_all_id)
         return location_details
+    
 
 
         
