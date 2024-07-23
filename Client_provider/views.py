@@ -261,7 +261,17 @@ class TherapistViewSet(viewsets.ModelViewSet):
             serializer = TherapistAvailSerializer(data=request.data)
             if serializer.is_valid():
                 data_avail = serializer.validated_data.get("availablityDate")
-                therapist_data = therapistAvailability.objects.get(date=data_avail)
+                therapistId=request.headers.get("therapistId","None")
+                if therapistId:
+                    therapist_data = therapistAvailability.objects.get(therapist_id__therapist_id=therapistId,date=data_avail)
+                else:
+                    response_data = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': "provide therapistId in headers"
+                    }
+                    return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+                
                 slots = therapist_data.available_slots
                 data_objects=Appointment1.objects.filter(appointmentDate=data_avail).all()
                 booked_slots = []
@@ -282,6 +292,7 @@ class TherapistViewSet(viewsets.ModelViewSet):
                     'status': 'success',
                     'statusCode': 200,
                     'data': {
+                        "therapistId":therapistId,
                         "availableSlots":available_slots
                     }
                 }
@@ -292,7 +303,7 @@ class TherapistViewSet(viewsets.ModelViewSet):
             response_data = {
                     'status': 'error',
                     'statusCode': 404,
-                    'message': "Therapist not available on that day"
+                    'message': "Therapist id not found or therapist data is not updated"
                 }
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
@@ -540,6 +551,8 @@ class Client_booking_Details(viewsets.ModelViewSet):
     @action(detail=False,methods=['get'])
     def Get_user_Apointment_detail(self,request):
         data_pd_id=request.headers.get("appointmentId","None")
+        if data_pd_id:
+            return Response({'error': 'appointmentId not found in headers'}, status=status.HTTP_400_BAD_REQUEST)
         data_id={
             'appointmentId':data_pd_id
         }
