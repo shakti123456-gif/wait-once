@@ -127,12 +127,13 @@ class AppointmentSerializerfetch(serializers.ModelSerializer):
     therapistData = therapistSerializerAppointment(read_only=True)
     serviceData = ServiceSerializerdetail(read_only=True)
     locationData = LocationSerializerdetail(read_only=True)
-    therapytimeStart = serializers.TimeField(source='TherapyTime_start', read_only=True)
-    therapytimeEnd = serializers.TimeField(source='TherapyTime_end', read_only=True)
+    therapyStartTime = serializers.TimeField(source='TherapyTime_start', read_only=True)
+    therapyEndTime = serializers.TimeField(source='TherapyTime_end', read_only=True)
+    isConfimed = serializers.BooleanField(source='isconfimed', read_only=True)
 
     class Meta:
         model = Appointment1
-        fields = ['clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapytimeStart','therapytimeEnd','status','isconfimed']
+        fields = ['clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapyStartTime','therapyEndTime','status','isConfimed']
 
 
 class TherapistAvailSerializer(serializers.Serializer):
