@@ -539,7 +539,11 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
     @action(detail=False,methods=['get'])
     def Get_user_Apointment_detail(self,request):
-        serializer = AppointmentSerializer(data=request.data)
+        data_pd_id=request.headers.get("appointmentId","None")
+        data_id={
+            'appointmentId':data_pd_id
+        }
+        serializer = AppointmentSerializer(data=data_id)
         if serializer.is_valid():
             appointment_id = serializer.validated_data['appointmentId']
             try: 
@@ -556,7 +560,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                     'status': 'error',
                     'statusCode': 404,
-                    'message': str(e),
+                    'message': 'ApointmentId  doest not Exist',
                     }     
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -17,13 +17,13 @@ class ProviderSerializer(serializers.ModelSerializer):
 class therapistSerializer(serializers.ModelSerializer):
     therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
     specialization = serializers.CharField(source='therapist_type', read_only=True)
-    therapistFullname = serializers.SerializerMethodField(read_only=True)
+    therapistFullName = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Therapist
-        fields = ["therapistId", "therapistFullname", "specialization","expirence"]
+        fields = ["therapistId", "therapistFullName", "specialization","expirence"]
 
-    def get_therapistFullname(self, obj):
+    def get_therapistFullName(self, obj):
         therapist_auth = obj.therapist_auth  
         if therapist_auth:
             return f"{therapist_auth.firstName} {therapist_auth.lastName}"
@@ -32,15 +32,15 @@ class therapistSerializer(serializers.ModelSerializer):
 
 class therapistSerializerAppointment(serializers.ModelSerializer):
     therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
-    therapistFullname = serializers.SerializerMethodField(read_only=True)
+    therapistFullName = serializers.SerializerMethodField(read_only=True)
     specialization = serializers.CharField(source='therapist_type', read_only=True)
 
     class Meta:
         model = Therapist
-        fields = ["therapistId", "therapistFullname","specialization"]
+        fields = ["therapistId", "therapistFullName","specialization"]
 
 
-    def get_therapistFullname(self, obj):
+    def get_therapistFullName(self, obj):
         therapist_auth = obj.therapist_auth  
         if therapist_auth:
             return f"{therapist_auth.firstName} {therapist_auth.lastName}"
