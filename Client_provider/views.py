@@ -258,7 +258,11 @@ class TherapistViewSet(viewsets.ModelViewSet):
     @action(detail=True,methods=['get'])
     def therapist_availablity(self, request, pk=None):
         try:
-            serializer = TherapistAvailSerializer(data=request.data)
+            availablityDate1=request.headers.get("availablityDate","None")
+            data1={
+                "availablityDate":availablityDate1
+            }
+            serializer = TherapistAvailSerializer(data=data1)
             if serializer.is_valid():
                 data_avail = serializer.validated_data.get("availablityDate")
                 therapistId=request.headers.get("therapistId","None")
