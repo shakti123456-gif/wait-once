@@ -460,7 +460,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 if available:
                     appointments = Appointment1.objects.filter(
                             appointmentDate=date_appointment, 
-                            therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1)
+                            therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1)
             
                     if appointments.exists():
                         response = {
@@ -500,14 +500,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
             location=Location.objects.filter(location_id=LocationId).first()
 
             new_appointment = Appointment1(
-                clientId=request.user,
-                providerId=provider,
-                therapistId=therapist_avail_date.therapist_id,
-                serviceId=service,
+                clientData=request.user,
+                providerData=provider,
+                therapistData=therapist_avail_date.therapist_id,
+                serviceData=service,
                 appointmentDate=date_appointment,
                 TherapyTime_start=therapy_time_start,
                 TherapyTime_end=timeslot2,
-                LocationId=location,
+                locationData=location,
                 status=status_check,
                 isconfimed=True
             )
