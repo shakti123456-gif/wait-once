@@ -113,6 +113,12 @@ class AppointmentSerializer1(serializers.ModelSerializer):
 class AppointmentSerializer(serializers.Serializer):
     appointmentId = serializers.IntegerField()
 
+class RescheduleAppointmentSerializer(serializers.Serializer):
+    appointmentId = serializers.IntegerField()
+    rescheduleAppointmentDate = serializers.DateField(input_formats=['%d-%m-%Y'])
+    rescheduleTime = serializers.TimeField(input_formats=['%H:%M:%S'])
+
+
 class AppointmentSerializerfetch(serializers.ModelSerializer):
     # AppointmentId = serializers.IntegerField(source='id', read_only=True)
     clientId = UserMobileSerializerfetchdata(read_only=True)

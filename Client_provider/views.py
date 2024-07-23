@@ -12,7 +12,7 @@ from mobile_api_user.models import Client_details_view,Client_sub_view
 from datetime import datetime, timedelta
 from django.http import JsonResponse, HttpResponse
 import json
-from .Serializers import TherapistAvailSerializer ,clientBooking,TherapistSerializerweb
+from .Serializers import TherapistAvailSerializer ,clientBooking,TherapistSerializerweb,RescheduleAppointmentSerializer
 
 
 class ProviderViewSet(viewsets.ModelViewSet):
@@ -513,7 +513,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
             return Response(response_data, status=status.HTTP_200_OK)
     
-    @action(detail=False,methods=['post'])
+    @action(detail=True,methods=['post'])
     def delete_user_apointment(self,request):
         serializer = AppointmentSerializer(data=request.data)
         if serializer.is_valid():
@@ -526,7 +526,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     'statusCode': 200,
                     'message': 'Appointment successfully deleted',
                 }
-                return Response(response, status=status.HTTP_204_NO_CONTENT)
+                return Response(response,status=status.HTTP_204_NO_CONTENT)
             except Appointment1.DoesNotExist:
                 response = {
                     'status': 'error',
@@ -569,8 +569,16 @@ class Client_booking_Details(viewsets.ModelViewSet):
             date_str=data_check.get("date")
             upcomingappointment=data_check.get("isUpcomingappointment")
             if date_str:
-                date_obj = datetime.strptime(date_str, '%d-%m-%Y')
-                formatted_date_str = date_obj.strftime('%Y-%m-%d')
+                try:
+                    date_obj = datetime.strptime(date_str, '%d-%m-%Y')
+                    formatted_date_str = date_obj.strftime('%Y-%m-%d')
+                except Exception as e:
+                    response = {
+                        'status': 'error',
+                        'statusCode': 404,
+                        'message': 'follow date and time  in this format %d-%m-%Y',
+                    }
+                    return Response(response, status=status.HTTP_404_NOT_FOUND)
                 data_obj=Appointment1.objects.filter(clientId=request.user,appointmentDate=formatted_date_str).all()
                 serializer = AppointmentSerializerfetch(data_obj,many=True)
                 if not serializer.data:
@@ -622,18 +630,33 @@ class Client_booking_Details(viewsets.ModelViewSet):
     @action(detail=True,methods=['post'])
     def reshedule_apointment(self,request):
         try:
-            data_check=request.data
-            data_new_appointment=data_check.get("resheduleAppointmentDate")
-            new_obj = datetime.strptime(data_new_appointment, '%d-%m-%Y')
-            data_new_appointment = new_obj.strftime('%Y-%m-%d')
-            appointment_id = data_check.get('appointmentId')
-            resheduletime=data_check.get('resheduletime')
+
+            serializer = RescheduleAppointmentSerializer(data=request.data)
+            if serializer.is_valid():
+                validated_data = serializer.validated_data
+                
+                # Extract data from validated data
+                appointment_id = validated_data['appointmentId']
+                reschedule_date = validated_data['rescheduleAppointmentDate']
+                reschedule_time = validated_data['rescheduleTime']
+        
+     
+                new_obj = datetime.strptime(reschedule_date, '%d-%m-%Y')
+                reschedule_date = new_obj.strftime('%Y-%m-%d')
+            else:
+                response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'data': serializer.errors,
+                    }     
+                return Response(response, status=status.HTTP_404_NOT_FOUND)            
+
             appointment = Appointment1.objects.get(clientId=request.user, id=appointment_id)
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id=appointment.therapistId,
-                                                                   date=data_new_appointment,Provider=appointment.providerId).first()
+                                                                   date=reschedule_date,Provider=appointment.providerId).first()
             
             try:
-                therapy_time_start = datetime.strptime(resheduletime, "%H:%M:%S").time()
+                therapy_time_start = datetime.strptime(reschedule_time, "%H:%M:%S").time()
             except ValueError:
                 return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
             
@@ -665,7 +688,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                         'status': 'error',
                         'statusCode': 404,
-                        'message': 'slots not found ',
+                        'message': 'slots not found',
                     }     
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
 
