@@ -33,10 +33,11 @@ class therapistSerializer(serializers.ModelSerializer):
 class therapistSerializerAppointment(serializers.ModelSerializer):
     therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
     therapistFullname = serializers.SerializerMethodField(read_only=True)
+    specialization = serializers.CharField(source='therapist_type', read_only=True)
 
     class Meta:
         model = Therapist
-        fields = ["therapistId", "therapistFullname"]
+        fields = ["therapistId", "therapistFullname","specialization"]
 
 
     def get_therapistFullname(self, obj):
@@ -107,7 +108,8 @@ class AppointmentSerializer1(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment
-        fields = '__all__'
+        # fields = ['clientData','childId','providerData','therapistData','serviceData','LocationData','appointmentDate','TherapyTime_start','TherapyTime_end','Location_details','status','isconfimed'
+
 
 
 class AppointmentSerializer(serializers.Serializer):
@@ -120,16 +122,17 @@ class RescheduleAppointmentSerializer(serializers.Serializer):
 
 
 class AppointmentSerializerfetch(serializers.ModelSerializer):
-    # AppointmentId = serializers.IntegerField(source='id', read_only=True)
-    clientdata = UserMobileSerializerfetchdata(read_only=True)
-    providerdata = ProviderSerializer(read_only=True)
-    therapistdata = therapistSerializerAppointment(read_only=True)
-    servicedata = ServiceSerializerdetail(read_only=True)
-    Locationdata = LocationSerializerdetail(read_only=True)
+    clientData = UserMobileSerializerfetchdata(read_only=True)
+    providerData = ProviderSerializer(read_only=True)
+    therapistData = therapistSerializerAppointment(read_only=True)
+    serviceData = ServiceSerializerdetail(read_only=True)
+    locationData = LocationSerializerdetail(read_only=True)
+    therapytimeStart = serializers.TimeField(source='TherapyTime_start', read_only=True)
+    therapytimeEnd = serializers.TimeField(source='TherapyTime_end', read_only=True)
 
     class Meta:
         model = Appointment1
-        fields = '__all__'
+        fields = ['clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapytimeStart','therapytimeEnd','status','isconfimed']
 
 
 class TherapistAvailSerializer(serializers.Serializer):

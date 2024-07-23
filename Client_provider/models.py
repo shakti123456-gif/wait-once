@@ -216,12 +216,12 @@ class Appointment(models.Model):
 
 
 class Appointment1(models.Model):
-    clientId = models.ForeignKey(User_mobile, on_delete=models.CASCADE,null=True, blank=True)
+    clientData = models.ForeignKey(User_mobile, on_delete=models.CASCADE,null=True, blank=True)
     childId = models.ForeignKey(Client_sub_view, on_delete=models.CASCADE, null=True, blank=True)
-    providerId = models.ForeignKey(Provider, on_delete=models.CASCADE, null=True, blank=True)
-    therapistId = models.ForeignKey(Therapist, on_delete=models.CASCADE, null=True, blank=True)
-    serviceId = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
-    LocationId = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
+    providerData = models.ForeignKey(Provider, on_delete=models.CASCADE, null=True, blank=True)
+    therapistData = models.ForeignKey(Therapist, on_delete=models.CASCADE, null=True, blank=True)
+    serviceData = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
+    locationData = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
     appointmentDate = models.DateField(null=True, blank=True)
     TherapyTime_start = models.TimeField(null=True, blank=True)
     TherapyTime_end = models.TimeField(null=True, blank=True)

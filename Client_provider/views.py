@@ -543,9 +543,8 @@ class Client_booking_Details(viewsets.ModelViewSet):
         if serializer.is_valid():
             appointment_id = serializer.validated_data['appointmentId']
             try: 
-                data_obj=Appointment1.objects.get(clientId=request.user,id=appointment_id)
+                data_obj=Appointment1.objects.get(clientData=request.user,id=appointment_id)
                 serializer = AppointmentSerializerfetch(data_obj)
-        
                 response = {
                     'status': 'success',
                     'statusCode': 200,
@@ -579,7 +578,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'message': 'follow date and time  in this format %d-%m-%Y',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
-                data_obj=Appointment1.objects.filter(clientId=request.user,appointmentDate=formatted_date_str).all()
+                data_obj=Appointment1.objects.filter(clientData=request.user,appointmentDate=formatted_date_str).all()
                 serializer = AppointmentSerializerfetch(data_obj,many=True)
                 if not serializer.data:
                     response = {
@@ -593,7 +592,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 t1 = datetime.now()
                 time_delta = timedelta(hours=5, minutes=30)
                 new_time = t1 + time_delta
-                data_obj=Appointment1.objects.filter(clientId=request.user,appointmentDate__gt=new_time).all()
+                data_obj=Appointment1.objects.filter(clientData=request.user,appointmentDate__gt=new_time).all()
                 serializer = AppointmentSerializerfetch(data_obj,many=True)
                 if not serializer.data:
                     response = {
@@ -603,7 +602,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
             else:
-                data_obj=Appointment1.objects.filter(clientId=request.user).all()
+                data_obj=Appointment1.objects.filter(clientData=request.user).all()
                 serializer = AppointmentSerializerfetch(data_obj,many=True)
                 if not serializer.data:
                     response = {
@@ -623,7 +622,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
             response = {
                     'status': 'error',
                     'statusCode': 404,
-                    'message': 'Some internal issue',
+                    'message': str(e),
                     }     
             return Response(response, status=status.HTTP_404_NOT_FOUND)            
     
