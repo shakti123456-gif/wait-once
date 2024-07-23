@@ -121,11 +121,11 @@ class RescheduleAppointmentSerializer(serializers.Serializer):
 
 class AppointmentSerializerfetch(serializers.ModelSerializer):
     # AppointmentId = serializers.IntegerField(source='id', read_only=True)
-    clientId = UserMobileSerializerfetchdata(read_only=True)
-    providerId = ProviderSerializer(read_only=True)
-    therapistId = therapistSerializerAppointment(read_only=True)
-    serviceId = ServiceSerializerdetail(read_only=True)
-    LocationId = LocationSerializerdetail(read_only=True)
+    clientdata = UserMobileSerializerfetchdata(read_only=True)
+    providerdata = ProviderSerializer(read_only=True)
+    therapistdata = therapistSerializerAppointment(read_only=True)
+    servicedata = ServiceSerializerdetail(read_only=True)
+    Locationdata = LocationSerializerdetail(read_only=True)
 
     class Meta:
         model = Appointment1

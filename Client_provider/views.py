@@ -609,7 +609,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                         'status': 'error',
                         'statusCode': 404,
-                        'message': 'No Appointment found ',
+                        'message': 'No Appointment found',
                     }
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
             response = {
