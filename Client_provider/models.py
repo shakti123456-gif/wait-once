@@ -124,7 +124,7 @@ class Provider(Baseclass):
     providerType = models.CharField(max_length=16)
     abn = models.CharField(max_length=16)
     ageGroup = models.CharField(max_length=16)
-    DVA = models.CharField(max_length=16, blank=True, null=True)
+    dva = models.CharField(max_length=16, blank=True, null=True)
     chain = models.CharField(max_length=16, blank=True, null=True)
     ProviderLocations = models.ManyToManyField(Location)
     web = models.URLField(max_length=128, blank=True, null=True)

@@ -14,7 +14,7 @@ class Provider_Details(admin.ModelAdmin):
   
     list_display = ('providerName','providerType','providerId')  
     fields = ['providerName','providerNum','providerType','therapistServicemap','email','ndisNumber',
-              'abn', 'ProviderEmployers','ProviderLocations','ageGroup','web','chain','phoneNo', 
+              'abn', 'ProviderEmployers','ProviderLocations','ageGroup','web','chain','phoneNo','dva' 
                'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
               'state','PIN','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
     

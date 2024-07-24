@@ -81,7 +81,7 @@ class ProviderSerializerdetail(serializers.ModelSerializer):
     class Meta:
         model = Provider
         fields = ['providerName','providerNum','providerType','email','ndisNumber',
-              'abn','ageGroup','web','chain','DVA', 
+              'abn','ageGroup','web','chain','dva',
               'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
               'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
         read_only_fields = fields

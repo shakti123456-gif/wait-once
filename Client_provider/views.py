@@ -231,7 +231,6 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 'message': 'Therapist ID is required',
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
-        
         data = self.get_queryset(therapist_id)
         if not data:
             response = {
@@ -247,13 +246,14 @@ class TherapistViewSet(viewsets.ModelViewSet):
 
         
         response_data = {
-            'status': 'success',
-            'statusCode': 200,
-            'data': therapist_data_serializer.data,
-            'services': service_serializer.data,
-            'providers': provider_data_serializer.data,
-        }
-
+                'status': 'success',
+                'statusCode': 200,
+                'data': {
+                    'therapist': therapist_data_serializer.data,
+                    'services': service_serializer.data,
+                    'providers': provider_data_serializer.data,
+                }
+            }
         return Response(response_data, status=status.HTTP_200_OK)
     @action(detail=True,methods=['get'])
     def therapist_availablity(self, request, pk=None):
