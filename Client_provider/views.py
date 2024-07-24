@@ -84,7 +84,7 @@ class ProviderViewSet(viewsets.ModelViewSet):
             provider_serializer = ProviderSerializerdetail(provider_data)
             serialized_data = provider_serializer.data
             serialized_data['locations'] = location_serializer.data
-            serialized_data['therapist'] = therapist_serializer.data
+            serialized_data['therapists'] = therapist_serializer.data
             serialized_data['services'] = service_serializer.data
             response = {
             'status': 'success',
@@ -249,8 +249,8 @@ class TherapistViewSet(viewsets.ModelViewSet):
         response_data = {
             'status': 'success',
             'statusCode': 200,
-            'TherapistData': therapist_data_serializer.data,
-            'serviceData': service_serializer.data,
+            'data': therapist_data_serializer.data,
+            'services': service_serializer.data,
             'providers': provider_data_serializer.data,
         }
 
@@ -652,11 +652,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
         try:
             serializer = RescheduleAppointmentSerializer(data=request.data)
             if serializer.is_valid():
-
                 validated_data = serializer.validated_data
-                print(validated_data)
-                
-                # Extract data from validated data
                 appointment_id = validated_data['appointmentId']
                 reschedule_date = validated_data['rescheduleAppointmentDate']
                 resheduletime = validated_data['rescheduleTime']
@@ -667,10 +663,10 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     'data': serializer.errors,
                     }     
                 return Response(response, status=status.HTTP_404_NOT_FOUND)            
-
-            appointment = Appointment1.objects.get(clientId=request.user, id=appointment_id)
-            therapist_avail_date=therapistAvailability.objects.filter(therapist_id=appointment.therapistId,
-                                                                   date=reschedule_date,Provider=appointment.providerId).first()
+            
+            appointment = Appointment1.objects.get(clientData=request.user, id=appointment_id)
+            therapist_avail_date=therapistAvailability.objects.filter(therapist_id=appointment.therapistData,
+                                                                   date=reschedule_date,Provider=appointment.providerData).first()
             try:
                 therapy_time_start = resheduletime
             except ValueError:
@@ -681,7 +677,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 data_avalable_slots=therapist_avail_date.available_slots
                 if not data_avalable_slots:
                     return Exception("Therapist slot is not found")
-                print("--------------------------------------")
                 for time_slot in data_avalable_slots:
                     time1,time2=time_slot.split("-")
                     timeslot1 = datetime.strptime(time1, "%H:%M:%S").time()
@@ -694,12 +689,12 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     if resheduletime :
                         appointments = Appointment1.objects.filter(
                             appointmentDate=reschedule_date, 
-                            therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=therapy_time_start)
+                            therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=therapy_time_start)
 
                     else: 
                         appointments = Appointment1.objects.filter(
                         appointmentDate=reschedule_date, 
-                        therapistId=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=appointment.TherapyTime_start)
+                        therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=appointment.TherapyTime_start)
                 else:
                     response = {
                         'status': 'error',

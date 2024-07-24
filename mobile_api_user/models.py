@@ -153,7 +153,7 @@ class Client_details_view(Baseclass):
     )
     Client_ID = models.AutoField(primary_key=True)
     Client_auth = models.OneToOneField(User_mobile, on_delete=models.CASCADE)
-    Type = models.CharField(max_length=1, choices=Type_CHOICES,null=True,blank=True)
+    type = models.CharField(max_length=1, choices=Type_CHOICES,null=True,blank=True)
     addChildren=models.ManyToManyField(Client_sub_view)
 
     def count_empty_fields(self):

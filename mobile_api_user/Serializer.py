@@ -17,11 +17,11 @@ class UserMobileSerializer(serializers.ModelSerializer):
         ]
 
 class ClientSubSerializer(serializers.ModelSerializer):
-    dateofBirth = serializers.DateField(input_formats=['%d/%m/%Y'], required=False, source='dateofbirth')
+    dateOfBirth = serializers.DateField(input_formats=['%d/%m/%Y'], required=False, source='dateofbirth')
 
     class Meta:
         model = Client_sub_view
-        fields = ['firstName', 'lastName', 'dateofBirth', 'insurance']
+        fields = ['firstName', 'lastName', 'dateOfBirth', 'insurance']
 
 class ClientDetailSerializer(serializers.ModelSerializer):
     ClientAuth = UserMobileSerializer(read_only=True)
@@ -58,12 +58,22 @@ class UserMobileSerializerfetch(serializers.ModelSerializer):
         fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
                   'ndisNumber', 'communicationPreference', 'signingAs']
         
-class ClientDetailsViewSerializers_percentage(serializers.ModelSerializer):
-    user_mobile = UserMobileSerializerfetch(read_only=True)
+class ClientDetailsViewSerializers(serializers.ModelSerializer):
+    clientId = serializers.IntegerField(read_only=True, source='Client_ID')
+    clientDetails = UserMobileSerializerfetch(read_only=True, source='Client_auth')
+    childrenDetails = ClientSubSerializer(many=True, read_only=True, source='addChildren')
 
     class Meta:
         model = Client_details_view
-        fields ='__all__'
+        fields = ['clientId','clientDetails','childrenDetails', 'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
+              'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if 'childrenDetails' in representation and not representation['childrenDetails']:
+            del representation['childrenDetails']
+        return representation
+
         
 class UserMobileSerializerfetchdata(serializers.ModelSerializer):    
     class Meta:

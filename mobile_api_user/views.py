@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404,HttpResponse
 from rest_framework.permissions import IsAuthenticated
-from .Serializer import LoginAPIView ,UserMobileSerializer,ClientDetailSerializer,ClientSubSerializer,UserMobileSerializerfetch,Client_details_view
+from .Serializer import LoginAPIView ,UserMobileSerializer,ClientDetailSerializer,ClientSubSerializer,UserMobileSerializerfetch,Client_details_view,ClientDetailsViewSerializers
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
 from django.db.models import Q
@@ -89,7 +89,6 @@ class UserRegistrationView(generics.CreateAPIView):
  
 
 class Fetch_and_update_user(APIView):
-    
     authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -116,10 +115,10 @@ class Fetch_and_update_user(APIView):
                 'status-code': 404,
                 'message': 'Please pass userId in header',
                 }
-            user_object = User_mobile.objects.get(userId=user_Id)
-            data_obj=Client_details_view.objects.get(Client_auth=user_object)
+            data_obj=Client_details_view.objects.get(Client_auth__userId=user_Id)
             percentage=data_obj.percentage_empty_fields()
-            serializer = UserMobileSerializerfetch(user_object)
+            
+            serializer=ClientDetailsViewSerializers(data_obj)
             response_data = serializer.data
             percentage = round(percentage)
             response_data['percentage']=percentage
@@ -264,7 +263,7 @@ class ChildrenListView(generics.ListAPIView):
             response = {
                 'status': 'error',
                 'statusCode': 200,
-                'message': 'user doestnot have children details',
+                'message': 'user Doestnot have children details',
                 }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(queryset, many=True)

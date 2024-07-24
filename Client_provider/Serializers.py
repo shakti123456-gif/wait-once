@@ -21,7 +21,7 @@ class therapistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Therapist
-        fields = ["therapistId", "therapistFullName", "specialization","expirence"]
+        fields = ["therapistId", "therapistFullName", "specialization","experience"]
 
     def get_therapistFullName(self, obj):
         therapist_auth = obj.therapist_auth  
@@ -81,9 +81,9 @@ class ProviderSerializerdetail(serializers.ModelSerializer):
     class Meta:
         model = Provider
         fields = ['providerName','providerNum','providerType','email','ndisNumber',
-              'abn','ageGroup','web','chain','phoneNo', 
-              'AlternativeMobileNumber','PermanentAddress1','PermanentAddress2','City',
-              'State','PIN','AdditionalInfo1','AdditionalInfo2','AdditionalInfo3','AdditionalInfo4']
+              'abn','ageGroup','web','chain','DVA', 
+              'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
+              'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
         read_only_fields = fields
 
 
@@ -152,7 +152,7 @@ class TherapistSerializerweb(serializers.ModelSerializer):
 
     class Meta:
         model = Therapist
-        fields = ["therapistId", "therapistFullname", "specialization","expirence"]
+        fields = ["therapistId", "therapistFullname", "specialization","experience"]
 
     def get_therapistFullname(self, obj):
         therapist_auth = obj.therapist_auth  

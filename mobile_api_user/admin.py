@@ -5,11 +5,11 @@ from django.contrib import admin
 from .models import User_mobile,Error_handling,Client_details_view,Client_sub_view
 
 class Client_Details(admin.ModelAdmin):
-    list_display = ('Client_auth','Type')
+    list_display = ('Client_auth','type')
     # list_filter =  ('author', 'is_published', 'published_date')
     # search_fields = ('title', 'author_name')
     # ordering = ('-published_date',)
-    fields = ['Client_auth','Type','addChildren',
+    fields = ['Client_auth','type','addChildren',
               'AlternativeMobileNumber','PermanentAddress1','PermanentAddress2','City',
               'State','PIN','AdditionalInfo1','AdditionalInfo2','AdditionalInfo3','AdditionalInfo4']
     

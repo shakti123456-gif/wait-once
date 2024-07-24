@@ -2,28 +2,24 @@ from django.contrib import admin
 from .models import *
 
 
-class Therapist_Details(admin.ModelAdmin):
-  
-    list_display = ('therapist_auth', 'therapist_num','AlternativeMobileNumber','therapist_id')
-   
+class Therapist_Details(admin.ModelAdmin):  
+    list_display = ('therapist_auth', 'therapist_num','alternativeMobileNumber','therapist_id')
     fields = [ 'therapist_auth','therapist_num','service_age_group','therapist_type','expirence',
               'dva','independent','multi_provider','multi_Location','web',
-              'AlternativeMobileNumber','PermanentAddress1','PermanentAddress2','City',
-              'State','PIN','AdditionalInfo1','AdditionalInfo2','AdditionalInfo3','AdditionalInfo4']
+              'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
+              'state','PIN','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
 
 
 class Provider_Details(admin.ModelAdmin):
   
-    list_display = ('providerName','providerType','providerId')
-  
-    fields = [ 'providerName','providerNum','providerType','therapistServicemap','email','ndisNumber',
+    list_display = ('providerName','providerType','providerId')  
+    fields = ['providerName','providerNum','providerType','therapistServicemap','email','ndisNumber',
               'abn', 'ProviderEmployers','ProviderLocations','ageGroup','web','chain','phoneNo', 
-              'AlternativeMobileNumber','PermanentAddress1','PermanentAddress2','City',
-              'State','PIN','AdditionalInfo1','AdditionalInfo2','AdditionalInfo3','AdditionalInfo4']
+               'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
+              'state','PIN','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
     
 
 class service_details(admin.ModelAdmin):
-  
     list_display = ('service_name','service_id')
     
 

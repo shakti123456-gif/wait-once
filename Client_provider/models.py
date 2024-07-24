@@ -38,7 +38,7 @@ class Therapist(Baseclass):
     multi_provider = models.BooleanField(default=False)
     multi_Location = models.ManyToManyField(Location)
     web = models.URLField(blank=True, null=True)
-    expirence=models.PositiveIntegerField(default=1)
+    experience=models.PositiveIntegerField(default=1)
     date_field= models.DateTimeField(null=True,blank=True)
     
 
@@ -127,7 +127,6 @@ class Provider(Baseclass):
     DVA = models.CharField(max_length=16, blank=True, null=True)
     chain = models.CharField(max_length=16, blank=True, null=True)
     ProviderLocations = models.ManyToManyField(Location)
-    phoneNo = models.CharField(max_length=16, blank=True, null=True)
     web = models.URLField(max_length=128, blank=True, null=True)
 
     
