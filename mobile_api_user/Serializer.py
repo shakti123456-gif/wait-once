@@ -52,17 +52,18 @@ class LoginAPIView(serializers.Serializer):
     password = serializers.CharField(max_length=200)
     
 
-class UserMobileSerializerfetch(serializers.ModelSerializer):    
+class UserMobileSerializerfetch(serializers.ModelSerializer):
+    dateOfBirth = serializers.DateField(read_only=True, source='dateofBirth')    
     class Meta:
         model = User_mobile
-        fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
+        fields = ['firstName', 'lastName', 'dateOfBirth', 'mobileNumber', 'email',
                   'ndisNumber', 'communicationPreference', 'signingAs']
         
 class ClientDetailsViewSerializers(serializers.ModelSerializer):
     clientId = serializers.IntegerField(read_only=True, source='Client_ID')
     clientDetails = UserMobileSerializerfetch(read_only=True, source='Client_auth')
     childrenDetails = ClientSubSerializer(many=True, read_only=True, source='addChildren')
-
+    
     class Meta:
         model = Client_details_view
         fields = ['clientId','clientDetails','childrenDetails', 'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
