@@ -226,7 +226,7 @@ class UserUpdateView(APIView):
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             
-            if user_stat.firebaseKey==firebase_key:
+            if user_stat.firebaseKey==firebase_key and not user_stat.firebaseKey:
                 response = {
                 'status': 'error',
                 'statusCode': 400,
