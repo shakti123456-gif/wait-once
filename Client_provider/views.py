@@ -341,8 +341,6 @@ class TherapistViewSet(viewsets.ModelViewSet):
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         
 
-    
-
 
 
 class Client_booking_Details(viewsets.ModelViewSet):

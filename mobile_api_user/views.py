@@ -117,7 +117,7 @@ class Fetch_and_update_user(APIView):
                 }
             data_obj=Client_details_view.objects.get(Client_auth__userId=user_Id)
             percentage=data_obj.percentage_empty_fields()
-            
+
             serializer=ClientDetailsViewSerializers(data_obj)
             response_data = serializer.data
             percentage = round(percentage)
@@ -213,9 +213,11 @@ class UserUpdateView(APIView):
         try:
             user_name=request.data.get("username")
             password=request.data.get("newpassword")
+            firebase_key=request.data.get("firebaseKey")
             user_stat = User_mobile.objects.filter(
                             (Q(mobileNumber=str(user_name)) | Q(email=str(user_name)))
                         ).first()
+            
             if not user_stat:
                 response = {
                 'status': 'error',
@@ -223,6 +225,15 @@ class UserUpdateView(APIView):
                 'message': 'Requested user is not exist',
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            
+            if user_stat.firebaseKey==firebase_key:
+                response = {
+                'status': 'error',
+                'statusCode': 400,
+                'message': 'firebase key not matched',
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
             user_stat.password=password
             user_stat.save()
             response = {

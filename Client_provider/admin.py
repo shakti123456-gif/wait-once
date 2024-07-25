@@ -23,6 +23,18 @@ class service_details(admin.ModelAdmin):
     list_display = ('service_name','service_id')
     
 
+
+class TherapistAvailAdmin(admin.ModelAdmin):
+    list_display = ('id', 'get_therapist_first_name', 'date')
+    ordering = ('date',)
+
+    def get_therapist_first_name(self, obj):
+        return obj.therapist_id.therapist_auth.firstName
+    get_therapist_first_name.short_description = 'Therapist First Name'
+
+    
+
+
 admin.site.register(Therapist,Therapist_Details)
 admin.site.register(Provider,Provider_Details)
 admin.site.register(Location)
@@ -33,5 +45,5 @@ admin.site.register(therapist_service)
 admin.site.register(Provider_employee)
 admin.site.register(Therapist_working_time)
 admin.site.register(Therapist_unavailability)
-admin.site.register(therapistAvailability)
+admin.site.register(therapistAvailability,TherapistAvailAdmin)
 admin.site.register(Appointment1)

@@ -41,7 +41,7 @@ class JWTAuthentication(BaseAuthentication):
             response['message']='Token has expired'
             raise exceptions.AuthenticationFailed(response)
         except jwt.InvalidTokenError:
-            response['message']='Invalid token'
+            response['message']='Invalid token py'
             raise exceptions.AuthenticationFailed(response)
 
         return (user, token)

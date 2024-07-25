@@ -4,15 +4,10 @@ from .models import Provider,Therapist,Location,Service,Therapist_working_time ,
 from mobile_api_user.Serializer import UserMobileSerializerfetchdata
 
 class ProviderSerializer(serializers.ModelSerializer):
-    # providerId=serializers.EmailField(source='provider_id')
     contactInfo = serializers.EmailField(source='email')
-    # providerName=serializers.EmailField(source='provider_name')
     class Meta:
         model = Provider
         fields = ["providerId","providerName","contactInfo"]
-
-
-
 
 class therapistSerializer(serializers.ModelSerializer):
     therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
@@ -28,8 +23,8 @@ class therapistSerializer(serializers.ModelSerializer):
         if therapist_auth:
             return f"{therapist_auth.firstName} {therapist_auth.lastName}"
         return "Not added"
-
-
+    
+    
 class therapistSerializerAppointment(serializers.ModelSerializer):
     therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
     therapistFullName = serializers.SerializerMethodField(read_only=True)

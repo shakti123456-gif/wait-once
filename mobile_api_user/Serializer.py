@@ -13,7 +13,7 @@ class UserMobileSerializer(serializers.ModelSerializer):
         model = User_mobile
         fields = [
             'firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
-            'ndisNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate'
+            'ndisNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate','firebaseKey'
         ]
 
 class ClientSubSerializer(serializers.ModelSerializer):
