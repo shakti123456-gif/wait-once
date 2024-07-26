@@ -16,7 +16,7 @@ urlpatterns = [
   path('cancel/user/appointment',Client_booking_Details.as_view({'post': 'delete_user_apointment'}), name='delete-appointment'),
   path('user/appointment/detail/byId',Client_booking_Details.as_view({'get': 'Get_user_Apointment_detail'}), name='get-user-detail'),
   path('user/allappointments',Client_booking_Details.as_view({'get': 'Get_user_upcoming_apointment'}), name='get-user-detail'),
-  path('user/reshedule/apointment',Client_booking_Details.as_view({'get': 'reshedule_apointment'}), name='reshedule_apointment'),
+  path('user/reshedule/apointment',Client_booking_Details.as_view({'post': 'reshedule_apointment'}), name='reshedule_apointment'),
 
   # path('therapists/<int:pk>/', therapist_detail, name='therapist_detail'),
 

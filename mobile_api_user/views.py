@@ -226,13 +226,13 @@ class UserUpdateView(APIView):
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             
-            if user_stat.firebaseKey==firebase_key and not user_stat.firebaseKey:
-                response = {
-                'status': 'error',
-                'statusCode': 400,
-                'message': 'firebase key not matched',
-                }
-                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            # if user_stat.firebaseKey==firebase_key and not user_stat.firebaseKey:
+            #     response = {
+            #     'status': 'error',
+            #     'statusCode': 400,
+            #     'message': 'firebase key not matched',
+            #     }
+            #     return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
             user_stat.password=password
             user_stat.save()

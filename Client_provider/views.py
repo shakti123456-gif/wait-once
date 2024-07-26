@@ -553,7 +553,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
     @action(detail=False,methods=['get'])
     def Get_user_Apointment_detail(self,request):
         data_pd_id=request.headers.get("appointmentId","None")
-        
         if not data_pd_id:
             return Response({'error': 'appointmentId not found in headers'}, status=status.HTTP_400_BAD_REQUEST)
         data_id={
