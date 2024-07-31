@@ -497,9 +497,10 @@ class User_add_children(generics.CreateAPIView):
                     }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    def update(self,request,**kwargs):
+    def put(self,request,**kwargs):
         try:
             clientId=request.headers.get("clientId")
+            _userId=request.headers.get("userId")
             if not clientId:
                 raise Exception("please provide ClientId in headers")
             update_data = request.data.pop('updateChildren', None)
@@ -516,6 +517,10 @@ class User_add_children(generics.CreateAPIView):
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             
             instance = self.get_object(clientId)
+            data_check=Client_details_view.objects.get(Client_auth__userId=_userId)
+            if not data_check.addChildren.filter(clientSubId=instance.clientSubId).exists():
+                raise Exception("Child instance does not exist in client's children list.")
+            
             serializer = ClientSubSerializer(instance, data=update_data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -539,7 +544,7 @@ class User_add_children(generics.CreateAPIView):
                 'status': 'error',
                 'statusCode': 400,
                 'message': 'Bad Request',
-                'details': str(e)
+                'details': "Children detail not exist"
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 

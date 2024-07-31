@@ -26,8 +26,7 @@ class User_Details(admin.ModelAdmin):
 
 class Client_sub_view_add(admin.ModelAdmin):
     list_display = ('clientSubId', 'firstName', 'lastName')
-    ordering = ('-clientSubId',)
-    fields = ['clientSubId', 'firstName', 'lastName','dateofbirth','insuranceNumber']
+    fields = ['firstName', 'lastName','dateofbirth','insuranceNumber']
     
 
 
