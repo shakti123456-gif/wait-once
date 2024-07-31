@@ -31,7 +31,8 @@ class UserRegistrationView(generics.CreateAPIView):
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             dataInsurance=client_auth_data.get("insuranceType",None)
             dataNumber=client_auth_data.get("insuranceNumber",None)
-            if not dataInsurance=="private" and not dataNumber:
+            Parent_sign=client_auth_data.get("signingAs",None)
+            if not dataInsurance=="private" and not dataNumber and  not Parent_sign=="Parent":
                 if not dataNumber:
                     response = {
                         'status': 'error',
@@ -52,6 +53,7 @@ class UserRegistrationView(generics.CreateAPIView):
             add_caretaker_detail = []
             if client_auth_data.get("signingAs") == "Parent":
                 addChildren_data = request.data.pop('addChildren', None)
+                sign_as=True
                 if addChildren_data is None:
                     response = {
                         'status': 'error',
@@ -429,18 +431,54 @@ class Fetch_and_update_user_web(APIView):
         return Response({'status': 'Bulk update successful'}, status=status.HTTP_200_OK)
 
 
-
-class user_add_children(generics.CreateAPIView):
+class User_add_children(generics.CreateAPIView):
     authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = ClientSubSerializer
 
-    def create(self,**kwargs):
+    def create(self,request,**kwargs):
         try:
-            pass
+            addChildren_data = request.data.pop('addChildren', None)
+            if not addChildren_data:
+                raise Exception("please add children Details")
+            
+            serilizers=ClientSubSerializer(data=addChildren_data)
+            if serilizers.is_valid():
+                insurancetNumber=serilizers.validate.get("insuranceNumber",None)
+                insurancetype=serilizers.validate.get("insuranceType",None)
+                existing_insurance_numbers = set(Client_sub_view.objects.values_list('insuranceNumber', flat=True))
+                if not insurancetype=="private" and not insurancetype:
+                    response = {
+                            'status': 'error',
+                            'status-code': 400,
+                            'message': 'Please add children insuranceNumber',
+                            }
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                if insurancetNumber and insurancetNumber in existing_insurance_numbers:
+                    response = {
+                            'status': 'error',
+                            'status-code': 400,
+                            'message': 'children insuranceNumber is already exists',
+                        }
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                data=serilizers.save()
+                client_data = Client_details_view.objects.get(Client_auth=request.user)
+                client_data.addChildren.add(data)
+                client_data.save()
+            
+            else:
+                details = [{'field': key, 'issue': error[0]} for key, error in serilizers.errors.items()]
+                response = {
+                        'status': 'error',
+                        'statusCode': 400,
+                        'message': 'Bad Request',
+                        'details': details
+                    }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-        except User_mobile.DoesNotExist:
-            pass
+        except Exception as e:
+
+            pass    
 
 
 

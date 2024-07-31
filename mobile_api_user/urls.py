@@ -16,6 +16,7 @@ urlpatterns = [
     path('user/children-details', ChildrenListView.as_view(),name="fetch_child_data"),
     path('mobile-app-configuration',get_application_configuration,name="get_applications"),
     path('fetchapi/web',Fetch_and_update_user_web.as_view(),name="web-fetch"),
+    path('user/addChildren',User_add_children.as_view(),name="addChildren"),
     path('delay/',show,name="show-error")
 ]
 
