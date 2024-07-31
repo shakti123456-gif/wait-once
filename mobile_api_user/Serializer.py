@@ -7,18 +7,18 @@ from datetime import datetime
 
 
 class UserMobileSerializer(serializers.ModelSerializer):
-    dateofBirth = serializers.DateField(input_formats=['%d/%m/%Y'])
+    dateOfBirth = serializers.DateField(input_formats=['%d/%m/%Y'], source="dateofBirth")
     prefix= serializers.CharField(read_only=True, source='Client_Sal')
     class Meta:
         model = User_mobile
         fields = [
-            'prefix','firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
+            'prefix','firstName', 'lastName', 'dateOfBirth', 'mobileNumber', 'email',
             'insuranceNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate','firebaseKey','insuranceType'
         ]
 
 class ClientSubSerializer(serializers.ModelSerializer):
     dateOfBirth = serializers.DateField(input_formats=['%d/%m/%Y'], required=False, source='dateofbirth')
-
+    
     class Meta:
         model = Client_sub_view
         fields = ['firstName', 'lastName', 'dateOfBirth', 'insuranceNumber','insuranceType']

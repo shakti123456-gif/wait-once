@@ -51,9 +51,9 @@ class UserRegistrationView(generics.CreateAPIView):
                         
             client_auth_serializer = UserMobileSerializer(data=client_auth_data)
             add_caretaker_detail = []
-            if str(client_auth_data.get("signingAs")).lower() == "Parent":
+            if client_auth_data.get("signingAs") == "Parent":
                 addChildren_data = request.data.pop('addChildren', None)
-                sign_as=True
+
                 if addChildren_data is None:
                     response = {
                         'status': 'error',
@@ -123,7 +123,6 @@ class UserRegistrationView(generics.CreateAPIView):
                     'message': 'User created successfully'
                 }
                 return Response(response, status=status.HTTP_201_CREATED)
-
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             response = {
