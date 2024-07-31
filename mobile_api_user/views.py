@@ -66,7 +66,7 @@ class UserRegistrationView(generics.CreateAPIView):
                 for children in addChildren_data:
                     _addChildren_data=children.get("insuranceNumber",None)
                     
-                    if not str(children.get("insuranceType"))=="private" and not _addChildren_data:
+                    if not str(children.get("insuranceType")).lower()=="private" and not _addChildren_data:
                         response = {
                             'status': 'error',
                             'status-code': 400,
