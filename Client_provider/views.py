@@ -1,18 +1,14 @@
 from mobile_api_user.authentication import JWTAuthentication
-from rest_framework import generics
-from .models import Provider,Therapist,Service,therapist_service,Therapist_working_time,Location,therapistAvailability,Appointment,Appointment1
-from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,AppointmentSerializer,AppointmentSerializerfetch
+from .models import Provider,Therapist,Service,therapist_service,Location,therapistAvailability,\
+    Appointment,Appointment1
+from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,\
+    AppointmentSerializer,AppointmentSerializerfetch,TherapistAvailSerializer ,RescheduleAppointmentSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from django.http import HttpResponse
-from mobile_api_user.models import Client_details_view,Client_sub_view
 from datetime import datetime, timedelta
 from django.http import JsonResponse, HttpResponse
-import json
-from .Serializers import TherapistAvailSerializer ,clientBooking,TherapistSerializerweb,RescheduleAppointmentSerializer
 
 
 class ProviderViewSet(viewsets.ModelViewSet):

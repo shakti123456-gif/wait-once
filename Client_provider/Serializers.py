@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
-from .models import Provider,Therapist,Location,Service,Therapist_working_time ,Therapist_unavailability ,Appointment1,Appointment
+from .models import Provider,Therapist,Location,Service,Therapist_working_time ,\
+    Therapist_unavailability ,Appointment1,Appointment,Provider_employee
 from mobile_api_user.Serializer import UserMobileSerializerfetchdata
 
 class ProviderSerializer(serializers.ModelSerializer):
@@ -24,7 +25,7 @@ class therapistSerializer(serializers.ModelSerializer):
             return f"{therapist_auth.firstName} {therapist_auth.lastName}"
         return "Not added"
     
-    
+
 class therapistSerializerAppointment(serializers.ModelSerializer):
     therapistId = serializers.IntegerField(source='therapist_id', read_only=True)
     therapistFullName = serializers.SerializerMethodField(read_only=True)
@@ -88,19 +89,19 @@ class TherapistWorkingTimeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class Therapist(serializers.ModelSerializer):
+class Therapist_unavailability(serializers.ModelSerializer):
     class Meta:
         model= Therapist_unavailability
         fields = '__all__'
 
 
+
 class AppointmentSerializer1(serializers.ModelSerializer):
     clientId = serializers.StringRelatedField()
     childId = serializers.StringRelatedField()
-    provider = serializers.StringRelatedField()
+    provider = serializers.StringRelatedField()  
     therapist = serializers.StringRelatedField()
     service = serializers.StringRelatedField()
-
     class Meta:
         model = Appointment
         # fields = ['clientData','childId','providerData','therapistData','serviceData','LocationData','appointmentDate','TherapyTime_start','TherapyTime_end','Location_details','status','isconfimed'
@@ -154,3 +155,10 @@ class TherapistSerializerweb(serializers.ModelSerializer):
         if therapist_auth:
             return f"{therapist_auth.firstName} {therapist_auth.lastName}"
         return "Not added"
+
+class ProviderEmployee(serializers.ModelSerializer):
+    employeeId= serializers.IntegerField(source='id', read_only=True)
+   
+    class Meta:
+        model = Provider_employee
+        fields = ["employeeId", "usersName","password","userType"]

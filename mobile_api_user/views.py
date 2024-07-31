@@ -1,12 +1,13 @@
 
 from rest_framework import generics, status
-from .models import User_mobile,Client_details_view
+from .models import User_mobile,Client_details_view,Client_sub_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404,HttpResponse
 from rest_framework.permissions import IsAuthenticated
-from .Serializer import LoginAPIView ,UserMobileSerializer,ClientDetailSerializer,ClientSubSerializer,UserMobileSerializerfetch,Client_details_view,ClientDetailsViewSerializers
+from .Serializer import LoginAPIView ,UserMobileSerializer,ClientDetailSerializer,ClientSubSerializer,\
+    UserMobileSerializerfetch,Client_details_view,ClientDetailsViewSerializers
 from rest_framework_simplejwt.tokens import RefreshToken 
 from .jwt_token import *
 from django.db.models import Q
@@ -17,76 +18,120 @@ from rest_framework.decorators import api_view
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = ClientDetailSerializer
-    queryset = Client_details_view.objects.all()
-    
+
     def create(self, request, *args, **kwargs):
-        client_auth_data = request.data.pop('ClientAuth', None)
-        if not client_auth_data:
-            response = {
-                'status': 'error',
-                'status-code': 400,
-                'message': 'ClientAuth data is required'
-            }
-            return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-        client_auth_serializer = UserMobileSerializer(data=client_auth_data)
-        add_caretaker_detail = []
-
-        if client_auth_data.get("signingAs") == "Parent":
-            add_caretaker_data = request.data.pop('addChildren', None)
-            if add_caretaker_data is None:
+        try:
+            client_auth_data = request.data.pop('clientDetail',None)
+            if not client_auth_data:
                 response = {
                     'status': 'error',
                     'status-code': 400,
-                    'message': 'Please add Caretaker details',
+                    'message': 'clientDetail data is required'
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
-            
-            add_caretaker_serializer = ClientSubSerializer(data=add_caretaker_data, many=True)
-            if not add_caretaker_serializer.is_valid():
+            dataInsurance=client_auth_data.get("insuranceType",None)
+            dataNumber=client_auth_data.get("insuranceNumber",None)
+            if not dataInsurance=="private" and not dataNumber:
+                if not dataNumber:
+                    response = {
+                        'status': 'error',
+                        'status-code': 400,
+                        'message': 'Please add insuranceNumber',
+                        }
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            if dataNumber:
+                if User_mobile.objects.filter(insuranceNumber=dataNumber).exists():
+                    response = {
+                            'status': 'error',
+                            'status-code': 400,
+                            'message': 'insuranceNumber is already exists',
+                            }
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST) 
+                        
+            client_auth_serializer = UserMobileSerializer(data=client_auth_data)
+            add_caretaker_detail = []
+            if client_auth_data.get("signingAs") == "Parent":
+                addChildren_data = request.data.pop('addChildren', None)
+                if addChildren_data is None:
+                    response = {
+                        'status': 'error',
+                        'status-code': 400,
+                        'message': 'Please add Caretaker details',
+                    }
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                existing_insurance_numbers = set(Client_sub_view.objects.values_list('insuranceNumber', flat=True))
+
+                for children in addChildren_data:
+                    _addChildren_data=children.get("insuranceNumber",None)
+                    
+                    if not children.get("insuranceType")=="private" and not _addChildren_data:
+                        response = {
+                            'status': 'error',
+                            'status-code': 400,
+                            'message': 'Please add children insuranceNumber',
+                            }
+                        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                    if _addChildren_data and _addChildren_data in existing_insurance_numbers:
+                        response = {
+                            'status': 'error',
+                            'status-code': 400,
+                            'message': 'children insuranceNumber is already exists',
+                        }
+                        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+                add_caretaker_serializer = ClientSubSerializer(data=addChildren_data, many=True)
+                if not add_caretaker_serializer.is_valid():
+                    details = [
+                        {'field': key, 'issue': error[0]}
+                        for error_dict in add_caretaker_serializer.errors
+                        for key, error in error_dict.items()
+                    ]
+                    response = {
+                        'status': 'error',
+                        'status-code': 400,
+                        'message': 'Invalid children details',
+                        'details': details
+                    }
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+            if not client_auth_serializer.is_valid():
                 details = [
                     {'field': key, 'issue': error[0]}
-                    for error_dict in add_caretaker_serializer.errors
-                    for key, error in error_dict.items()
+                    for key, error in client_auth_serializer.errors.items()
                 ]
+                response_data = {
+                    "status": "error",
+                    "code": 400,
+                    "message": "Bad Request",
+                    "details": details
+                }
+                return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                if client_auth_data.get("signingAs") == "Parent":
+                    add_caretaker_detail = add_caretaker_serializer.save()
+
+                client_auth = client_auth_serializer.save()
+                serializer.save(Client_auth=client_auth, addChildren=add_caretaker_detail)
+
                 response = {
+                    'status': 'success',
+                    'status-code': 201,
+                    'message': 'User created successfully'
+                }
+                return Response(response, status=status.HTTP_201_CREATED)
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            response = {
                     'status': 'error',
                     'status-code': 400,
-                    'message': 'Invalid Caretaker details',
-                    'details': details
+                    'message': str(e)
                 }
-                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-        if not client_auth_serializer.is_valid():
-            details = [
-                {'field': key, 'issue': error[0]}
-                for key, error in client_auth_serializer.errors.items()
-            ]
-            response_data = {
-                "status": "error",
-                "code": 400,
-                "message": "Bad Request",
-                "details": details
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            if client_auth_data.get("signingAs") == "Parent":
-                add_caretaker_detail = add_caretaker_serializer.save()
-
-            client_auth = client_auth_serializer.save()
-            serializer.save(Client_auth=client_auth, addChildren=add_caretaker_detail)
-
-            response = {
-                'status': 'success',
-                'status-code': 201,
-                'message': 'User created successfully'
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
- 
+    
 
 class Fetch_and_update_user(APIView):
     authentication_classes=[JWTAuthentication]
@@ -143,9 +188,7 @@ class Fetch_and_update_user(APIView):
                 'message': str(e),
             }
             return Response(response, status=400)
-        
-
-        
+       
 class Loginapi_views_jwt(APIView):
     serializer_class = LoginAPIView
 
@@ -278,7 +321,13 @@ class ChildrenListView(generics.ListAPIView):
                 }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
+        response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Request successful',
+                    'data': serializer.data
+                }
+        return Response(response, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -377,15 +426,21 @@ class Fetch_and_update_user_web(APIView):
 
         if errors:
             return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
-        
         return Response({'status': 'Bulk update successful'}, status=status.HTTP_200_OK)
 
 
 
+class user_add_children(generics.CreateAPIView):
+    authentication_classes=[JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = ClientSubSerializer
 
+    def create(self,**kwargs):
+        try:
+            pass
 
-
-
+        except User_mobile.DoesNotExist:
+            pass
 
 
 

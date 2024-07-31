@@ -5,6 +5,8 @@ from datetime import datetime,timedelta
 from Client_provider.BaseUser import Baseclass
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+
 
 class UserManager(BaseUserManager):
     def create_user(self,mobileNumber,password, firstName=None, lastName=None, dateofBirth=None, email=None, ndisNumber=None,communicationPreference=None,refferalCode=None,signingAs="Self"):
@@ -59,7 +61,7 @@ class User_mobile(AbstractBaseUser):
     dateofBirth = models.DateField(null=True, blank=True)
     mobileNumber = models.CharField(max_length=15, unique=True)
     email = models.CharField(max_length=100, null=True, blank=True,unique=True)
-    ndisNumber = models.CharField(max_length=15, null=True, blank=True,unique=True)
+    insuranceNumber = models.CharField(max_length=15, null=True, blank=True,unique=False)
     communicationPreference=models.CharField(max_length=100,null=True,blank=True)
     refferalCode=models.CharField(max_length=50,null=True,blank=True)
     is_active = models.BooleanField(default=True)
@@ -135,7 +137,7 @@ class Client_sub_view(models.Model):
     firstName=models.CharField(max_length=100)
     lastName=models.CharField(max_length=100)
     dateofbirth=models.DateField(null=True,blank=True) 
-    insurance=models.CharField(max_length=20,unique=True,null=True,blank=True)
+    insuranceNumber=models.CharField(max_length=20,unique=False,null=True,blank=True)
 
     def __str__(self):
         return f"{self.firstName} {self.lastName}"

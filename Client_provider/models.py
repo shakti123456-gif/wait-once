@@ -5,8 +5,6 @@ from .BaseUser import Baseclass
 from datetime import datetime ,timedelta
 
 
-
-
 class Location(models.Model):
     location_id = models.AutoField(primary_key=True)
     location_num = models.CharField(max_length=100)
@@ -79,21 +77,17 @@ class Service(models.Model):
         return self.service_name
 
 class Provider_employee(models.Model):
-    Users_name=models.CharField(max_length=100,null=True,blank=True)
+    usersName=models.CharField(max_length=100,null=True,blank=True)
     password=models.CharField(max_length=100,null=True,blank=True)
     USER_TYPE_CHOICES = [
         ('admin', 'Admin'),
         ('check', 'Check'),
         ('tech', 'Tech'),
-    ]
-    
-    Usertype = models.CharField(max_length=5, choices=USER_TYPE_CHOICES)
-
+    ]    
+    userType = models.CharField(max_length=5, choices=USER_TYPE_CHOICES)
     def __str__(self):        
-        return f"{self.Users_name} ({self.Usertype})"
-
+        return f"{self.usersName} ({self.userType})"
     class Meta:
-        db_table = ''
         managed = True
         verbose_name = 'Provider employee'
         verbose_name_plural = 'Provider employees'    
@@ -129,7 +123,6 @@ class Provider(Baseclass):
     ProviderLocations = models.ManyToManyField(Location)
     web = models.URLField(max_length=128, blank=True, null=True)
 
-    
     def __str__(self):
         return self.providerName
     
@@ -162,8 +155,14 @@ class Provider(Baseclass):
         location_details = Location.objects.filter(location_id__in=location_all_id)
         return location_details
     
-
-
+    @property
+    def ProviderEmployee(self):
+        Provider_employers=self.ProviderEmployers.all()
+        provider_id=[provider.id for provider in Provider_employers]
+        Provider_employee_data = Provider_employee.objects.filter(id__in=provider_id)
+        return Provider_employee_data
+    
+    
         
 class Appointment(models.Model):
     clientId = models.IntegerField(null=True,blank=True)

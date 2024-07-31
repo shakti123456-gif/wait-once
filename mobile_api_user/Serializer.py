@@ -8,12 +8,12 @@ from datetime import datetime
 
 class UserMobileSerializer(serializers.ModelSerializer):
     dateofBirth = serializers.DateField(input_formats=['%d/%m/%Y'])
-
+    prefix= serializers.CharField(read_only=True, source='Client_Sal')
     class Meta:
         model = User_mobile
         fields = [
-            'firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
-            'ndisNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate','firebaseKey'
+            'prefix','firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
+            'insuranceNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate','firebaseKey'
         ]
 
 class ClientSubSerializer(serializers.ModelSerializer):
@@ -21,7 +21,7 @@ class ClientSubSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Client_sub_view
-        fields = ['firstName', 'lastName', 'dateOfBirth', 'insurance']
+        fields = ['firstName', 'lastName', 'dateOfBirth', 'insuranceNumber']
 
 class ClientDetailSerializer(serializers.ModelSerializer):
     ClientAuth = UserMobileSerializer(read_only=True)
@@ -53,11 +53,12 @@ class LoginAPIView(serializers.Serializer):
     
 
 class UserMobileSerializerfetch(serializers.ModelSerializer):
-    dateOfBirth = serializers.DateField(read_only=True, source='dateofBirth')    
+    dateOfBirth = serializers.DateField(read_only=True, source='dateofBirth')
+    prefix= serializers.CharField(read_only=True, source='Client_Sal')    
     class Meta:
         model = User_mobile
-        fields = ['firstName', 'lastName', 'dateOfBirth', 'mobileNumber', 'email',
-                  'ndisNumber', 'communicationPreference', 'signingAs']
+        fields = ['prefix','firstName', 'lastName', 'dateOfBirth', 'mobileNumber', 'email',
+                  'insuranceNumber', 'communicationPreference', 'signingAs']
         
 class ClientDetailsViewSerializers(serializers.ModelSerializer):
     clientId = serializers.IntegerField(read_only=True, source='Client_ID')
@@ -81,12 +82,13 @@ class UserMobileSerializerfetchdata(serializers.ModelSerializer):
         model = User_mobile
         fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
                   'ndisNumber']
+
+
+
+
+
         
 
-# class UserMobileSerializerfetch(serializers.ModelSerializer):    
-#     class Meta:
-#         model = Client_sub_view
-#         fields = ['first_name', 'last_name', 'dateofBirth', 'Ndisnumber']
         
 
 

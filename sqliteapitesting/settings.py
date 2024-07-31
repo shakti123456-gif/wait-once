@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'mobile_api_user',
     'Client_provider',
     'django_celery_results',
+    'webapp'
 ]
 
 MIDDLEWARE = [
@@ -181,7 +182,6 @@ USE_TZ = True
 
 
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -199,7 +199,6 @@ SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
 }
 AUTHENTICATION_BACKENDS = ['mobile_api_user.authentication_backends.userlogin']
-
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
