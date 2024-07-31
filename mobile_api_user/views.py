@@ -32,7 +32,7 @@ class UserRegistrationView(generics.CreateAPIView):
             dataInsurance=client_auth_data.get("insuranceType",None)
             dataNumber=client_auth_data.get("insuranceNumber",None)
             Parent_sign=client_auth_data.get("signingAs",None)
-            if not dataInsurance=="private" and not dataNumber and  not Parent_sign=="Parent":
+            if not str(dataInsurance).lower()=="private" and not dataNumber and  not Parent_sign=="Parent":
                 if not dataNumber:
                     response = {
                         'status': 'error',
@@ -51,7 +51,7 @@ class UserRegistrationView(generics.CreateAPIView):
                         
             client_auth_serializer = UserMobileSerializer(data=client_auth_data)
             add_caretaker_detail = []
-            if client_auth_data.get("signingAs") == "Parent":
+            if str(client_auth_data.get("signingAs")).lower() == "Parent":
                 addChildren_data = request.data.pop('addChildren', None)
                 sign_as=True
                 if addChildren_data is None:
@@ -66,7 +66,7 @@ class UserRegistrationView(generics.CreateAPIView):
                 for children in addChildren_data:
                     _addChildren_data=children.get("insuranceNumber",None)
                     
-                    if not children.get("insuranceType")=="private" and not _addChildren_data:
+                    if not str(children.get("insuranceType"))=="private" and not _addChildren_data:
                         response = {
                             'status': 'error',
                             'status-code': 400,
@@ -436,25 +436,32 @@ class User_add_children(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ClientSubSerializer
 
+    def get_object(self,pk=None):
+        return Client_sub_view.objects.get(clientSubId=pk)
+    
     def create(self,request,**kwargs):
         try:
             addChildren_data = request.data.pop('addChildren', None)
             if not addChildren_data:
-                raise Exception("please add children Details")
-            
+                response = {
+                            'status': 'error',
+                            'status-code': 400,
+                            'message': 'please add children details',
+                            }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            insuranceType=addChildren_data.get('insuranceType',None) 
             serilizers=ClientSubSerializer(data=addChildren_data)
             if serilizers.is_valid():
-                insurancetNumber=serilizers.validate.get("insuranceNumber",None)
-                insurancetype=serilizers.validate.get("insuranceType",None)
+                insuranceNumber = serilizers.validated_data.get("insuranceNumber", None)
                 existing_insurance_numbers = set(Client_sub_view.objects.values_list('insuranceNumber', flat=True))
-                if not insurancetype=="private" and not insurancetype:
+                if not str(insuranceType).lower()=="private" and not insuranceNumber:
                     response = {
                             'status': 'error',
                             'status-code': 400,
                             'message': 'Please add children insuranceNumber',
                             }
                     return Response(response, status=status.HTTP_400_BAD_REQUEST)
-                if insurancetNumber and insurancetNumber in existing_insurance_numbers:
+                if insuranceNumber and insuranceNumber in existing_insurance_numbers:
                     response = {
                             'status': 'error',
                             'status-code': 400,
@@ -465,6 +472,12 @@ class User_add_children(generics.CreateAPIView):
                 client_data = Client_details_view.objects.get(Client_auth=request.user)
                 client_data.addChildren.add(data)
                 client_data.save()
+                response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Children Successfully added'
+                }
+                return Response(response, status=status.HTTP_200_OK)
             
             else:
                 details = [{'field': key, 'issue': error[0]} for key, error in serilizers.errors.items()]
@@ -477,9 +490,57 @@ class User_add_children(generics.CreateAPIView):
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
+            response = {
+                        'status': 'error',
+                        'statusCode': 400,
+                        'message': 'Bad Request',
+                        'details': str(e)
+                    }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-            pass    
-
-
-
+    def update(self,request,**kwargs):
+        try:
+            clientId=request.headers.get("clientId")
+            if not clientId:
+                raise Exception("please provide ClientId in headers")
+            update_data = request.data.pop('updateChildren', None)
+            if not update_data:
+                raise Exception("Please provide children details to update")
+            insuranceNumber = update_data.get("insuranceNumber", None)
+            existing_insurance_numbers = set(Client_sub_view.objects.values_list('insuranceNumber', flat=True))
+            if insuranceNumber and insuranceNumber in existing_insurance_numbers:
+                response = {
+                    'status': 'error',
+                    'status-code': 400,
+                    'message': 'Children insuranceNumber already exists'
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            
+            instance = self.get_object(clientId)
+            serializer = ClientSubSerializer(instance, data=update_data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Children details successfully updated'
+                }
+                return Response(response, status=status.HTTP_200_OK)
+            else:
+                details = [{'field': key, 'issue': error[0]} for key, error in serializer.errors.items()]
+                response = {
+                    'status': 'error',
+                    'statusCode': 400,
+                    'message': 'Bad Request',
+                    'details': details
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            response = {
+                'status': 'error',
+                'statusCode': 400,
+                'message': 'Bad Request',
+                'details': str(e)
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 

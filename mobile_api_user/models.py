@@ -72,7 +72,7 @@ class User_mobile(AbstractBaseUser):
     lastUpdate = models.DateTimeField(null=True,blank=True)
     firebaseKey=models.CharField(max_length=100,null=True,blank=True)
     password=models.CharField(max_length=15,verbose_name="Password")
-
+    insuranceType=models.CharField(max_length=25,null=True,blank=True)
     objects = UserManager()
 
     USERNAME_FIELD = 'mobileNumber'
@@ -138,6 +138,7 @@ class Client_sub_view(models.Model):
     lastName=models.CharField(max_length=100)
     dateofbirth=models.DateField(null=True,blank=True) 
     insuranceNumber=models.CharField(max_length=20,unique=False,null=True,blank=True)
+    insuranceType=models.CharField(max_length=20,unique=False,null=True,blank=True)
 
     def __str__(self):
         return f"{self.firstName} {self.lastName}"

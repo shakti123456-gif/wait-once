@@ -13,7 +13,7 @@ class UserMobileSerializer(serializers.ModelSerializer):
         model = User_mobile
         fields = [
             'prefix','firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
-            'insuranceNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate','firebaseKey'
+            'insuranceNumber', 'password', 'communicationPreference', 'refferalCode', 'signingAs','createdAt','lastUpdate','firebaseKey','insuranceType'
         ]
 
 class ClientSubSerializer(serializers.ModelSerializer):
@@ -21,7 +21,7 @@ class ClientSubSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Client_sub_view
-        fields = ['firstName', 'lastName', 'dateOfBirth', 'insuranceNumber']
+        fields = ['firstName', 'lastName', 'dateOfBirth', 'insuranceNumber','insuranceType']
 
 class ClientDetailSerializer(serializers.ModelSerializer):
     ClientAuth = UserMobileSerializer(read_only=True)
@@ -58,7 +58,7 @@ class UserMobileSerializerfetch(serializers.ModelSerializer):
     class Meta:
         model = User_mobile
         fields = ['prefix','firstName', 'lastName', 'dateOfBirth', 'mobileNumber', 'email',
-                  'insuranceNumber', 'communicationPreference', 'signingAs']
+                  'insuranceNumber', 'communicationPreference','insuranceType','signingAs','insuranceType']
         
 class ClientDetailsViewSerializers(serializers.ModelSerializer):
     clientId = serializers.IntegerField(read_only=True, source='Client_ID')
