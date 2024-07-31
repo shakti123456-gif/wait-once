@@ -18,7 +18,7 @@ class UserMobileSerializer(serializers.ModelSerializer):
 
 class ClientSubSerializer(serializers.ModelSerializer):
     dateOfBirth = serializers.DateField(input_formats=['%d/%m/%Y'], required=False, source='dateofbirth')
-    
+
     class Meta:
         model = Client_sub_view
         fields = ['firstName', 'lastName', 'dateOfBirth', 'insuranceNumber','insuranceType']
@@ -81,7 +81,7 @@ class UserMobileSerializerfetchdata(serializers.ModelSerializer):
     class Meta:
         model = User_mobile
         fields = ['firstName', 'lastName', 'dateofBirth', 'mobileNumber', 'email',
-                  'ndisNumber']
+                  'insuranceNumber']
 
 
 
