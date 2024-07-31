@@ -18,10 +18,11 @@ class UserMobileSerializer(serializers.ModelSerializer):
 
 class ClientSubSerializer(serializers.ModelSerializer):
     dateOfBirth = serializers.DateField(input_formats=['%d/%m/%Y'], required=False, source='dateofbirth')
+    childrenId= serializers.CharField(read_only=True, source='clientSubId')
 
     class Meta:
         model = Client_sub_view
-        fields = ['firstName', 'lastName', 'dateOfBirth', 'insuranceNumber','insuranceType']
+        fields = ['childrenId','firstName', 'lastName', 'dateOfBirth', 'insuranceNumber','insuranceType']
 
 class ClientDetailSerializer(serializers.ModelSerializer):
     ClientAuth = UserMobileSerializer(read_only=True)
