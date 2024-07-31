@@ -433,7 +433,7 @@ class Fetch_and_update_user_web(APIView):
 class User_add_children(generics.CreateAPIView):
     authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    serializer_class = ClientSubSerializer
+    serializer_class = Client_sub_view
 
     def get_object(self,pk=None):
         return Client_sub_view.objects.get(clientSubId=pk)
