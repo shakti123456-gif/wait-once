@@ -2,7 +2,7 @@ from mobile_api_user.authentication import JWTAuthentication
 from .models import Provider,Therapist,Service,therapist_service,Location,therapistAvailability,\
     Appointment,Appointment1
 from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,\
-    AppointmentSerializer,AppointmentSerializerfetch,TherapistAvailSerializer ,RescheduleAppointmentSerializer
+    AppointmentSerializer,AppointmentSerializerfetch,TherapistAvailSerializer ,RescheduleAppointmentSerializer,ServiceSerializerdetailAppointment
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -102,6 +102,8 @@ class ProviderViewSet(viewsets.ModelViewSet):
     def details_provider_therapist(self,request):
         data_pd_id=request.headers.get("providerId","None")
         therapist_pd_id=request.headers.get("therapistId","None")
+        if data_pd_id and therapist_pd_id:
+            raise Exception("providerId  and TherapistId should present in headers")
         try:
             provider_data=Provider.objects.filter(providerId=data_pd_id).first()
             data = provider_data.get_therapist_services(therapist_pd_id)
@@ -425,8 +427,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
             date_appointment = datetime.strptime(date_appointment, '%d-%m-%Y').strftime('%Y-%m-%d')
         except:
             return JsonResponse({"error": "please enter format day/month/year"}, status=400)
-
-
+        
         try:
             therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M:%S").time()
         except ValueError:
@@ -463,7 +464,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         #     'message': 'slot is already booked',
                         # }
                         # return Response(response, status=status.HTTP_404_NOT_FOUND)
-                        status_check="waitlist" 
+                        status_check="waiting" 
                 else:
                     response = {
                             'status': 'error',
@@ -484,7 +485,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     #         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
             else:
                 response = {
-                    'status': 'Error',
+                    'status': 'error',
                     'statusCode': 400,
                     'message': 'Therapist Data not found',
                 }        
@@ -719,7 +720,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'message': 'your Appointment successfully reschedule',
                     }     
                 
-                return Response(response, status=status.HTTP_404_NOT_FOUND)                 
+                return Response(response, status=status.HTTP_200_OK)
             else:
                 response = {
                     'status': 'error',
@@ -730,11 +731,77 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
         except Exception as e :
             response = {
-                    'status': 'Error code',
+                    'status': 'error',
                     'statusCode': 404,
                     'message': str(e),
                     }     
-            return Response(response, status=status.HTTP_404_NOT_FOUND)   
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True,methods=['get'])
+    def userServiceDetail(self,request):
+        try:
+            serviceData=Appointment1.objects.filter(clientData=request.user).values("serviceData").distinct()
+            if not serviceData:
+                raise Exception("service data not  found")
+            serviceDataId=[service['serviceData'] for service in serviceData]
+            dataService=Service.objects.filter(service_id__in=serviceDataId)
+            serviceSerializer=ServiceSerializerdetailAppointment(dataService,many=True)
+            response = {
+                            'status': '200',
+                            'statusCode': 200,
+                            'message': 'request Successfull',
+                            'data':serviceSerializer.data
+                    }     
+                    
+            return Response(response, status=status.HTTP_200_OK)
+        except Exception as  e :
+            response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': str(e),
+                    }     
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True,methods=['post'])
+    def userServiceTherapist(self,request):
+        try:
+            serviceId=request.headers.get("serviceId")
+            if not serviceId:
+                raise Exception("please add service id in headers")
+            therapistData=Appointment1.objects.filter(clientData=request.user,serviceData__service_id=serviceId).values('therapistData').distinct()
+            if not therapistData:
+                raise Exception("therapist data is not found")
+            therapistDataId=[therapist['therapistData'] for therapist in therapistData]
+            dataTherapist=Therapist.objects.filter(therapist_id__in=therapistDataId).all()
+            serviceSerializer=therapistSerializer(dataTherapist,many=True)
+            response = {
+                        'status': 'Success',
+                        'statusCode': 200,
+                        'message': 'request successfull',
+                        'data':serviceSerializer.data
+                    } 
+                        
+            return Response(response, status=status.HTTP_200_OK)
+           
+        except Exception as  e :
+            response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': str(e),
+                    }     
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=True,methods=['post'])
+    def reccuryAppointment(self,request):
+        pass
+        
+
+
+
+
+
+
+
         
 
 

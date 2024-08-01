@@ -17,6 +17,8 @@ urlpatterns = [
   path('user/appointment/detail/byId',Client_booking_Details.as_view({'get': 'Get_user_Apointment_detail'}), name='get-user-detail'),
   path('user/allappointments',Client_booking_Details.as_view({'get': 'Get_user_upcoming_apointment'}), name='get-user-detail'),
   path('user/reshedule/apointment',Client_booking_Details.as_view({'post': 'reshedule_apointment'}), name='reshedule_apointment'),
+  path('user/appointment/services',Client_booking_Details.as_view({'get': 'userServiceDetail'}), name='AppointmentService'),
+  path('user/appointment/service/therapist',Client_booking_Details.as_view({'get': 'userServiceTherapist'}), name='AppointmentServiceTherapist'),
   # path('therapists/<int:pk>/', therapist_detail, name='therapist_detail'),
   # path('reshdule/user/<int:pk>/booking/<int:pk>',Client_booking_Details.as_view({'post': 'create_booking1'}), name='client-booking'),
 ]
