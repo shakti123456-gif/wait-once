@@ -507,7 +507,7 @@ class User_add_children(generics.CreateAPIView):
                 raise Exception("please provide ClientId in headers")
             update_data = request.data.pop('updateChildren', None)
             if not update_data:
-                raise Exception("Please provide children details to update")
+                raise Exception("Please provide updateChildren in body")
             insuranceNumber = update_data.get("insuranceNumber", None)
             existing_insurance_numbers = set(Client_sub_view.objects.values_list('insuranceNumber', flat=True))
             if insuranceNumber and insuranceNumber in existing_insurance_numbers:

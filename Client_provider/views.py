@@ -457,12 +457,13 @@ class Client_booking_Details(viewsets.ModelViewSet):
                             therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1)
             
                     if appointments.exists():
-                        response = {
-                            'status': 'error',
-                            'statusCode': 404,
-                            'message': 'slot is already booked',
-                        }
-                        return Response(response, status=status.HTTP_404_NOT_FOUND)
+                        # response = {
+                        #     'status': 'error',
+                        #     'statusCode': 404,
+                        #     'message': 'slot is already booked',
+                        # }
+                        # return Response(response, status=status.HTTP_404_NOT_FOUND)
+                        status_check="waitlist" 
                 else:
                     response = {
                             'status': 'error',
@@ -580,7 +581,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
     def Get_user_upcoming_apointment(self,request):
         try:
             data_check=request.data
-            date_str=data_check.get("date")
+            date_str=request.headers.get("date",None)
             upcomingappointment=data_check.get("isUpcomingappointment")
             if date_str:
                 try:
