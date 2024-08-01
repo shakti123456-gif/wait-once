@@ -441,6 +441,7 @@ class User_add_children(generics.CreateAPIView):
     def create(self,request,**kwargs):
         try:
             addChildren_data = request.data.pop('addChildren', None)
+            mobileuserId=request.headers.get("userId")
             if not addChildren_data:
                 response = {
                             'status': 'error',
@@ -471,6 +472,7 @@ class User_add_children(generics.CreateAPIView):
                 client_data = Client_details_view.objects.get(Client_auth=request.user)
                 client_data.addChildren.add(data)
                 client_data.save()
+                Usermobile_save=User_mobile.objects.filter(userId=mobileuserId).update(signingAs="Parent")
                 response = {
                     'status': 'success',
                     'statusCode': 200,
@@ -547,4 +549,10 @@ class User_add_children(generics.CreateAPIView):
                 'details': "Children detail not exist"
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
 

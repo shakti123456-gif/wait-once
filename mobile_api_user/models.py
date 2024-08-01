@@ -139,7 +139,7 @@ class Client_sub_view(models.Model):
     dateofbirth=models.DateField(null=True,blank=True) 
     insuranceNumber=models.CharField(max_length=20,unique=False,null=True,blank=True)
     insuranceType=models.CharField(max_length=20,unique=False,null=True,blank=True)
-    
+
     def __str__(self):
         return f"{self.firstName} {self.lastName}"
     
@@ -188,6 +188,8 @@ class Client_details_view(Baseclass):
     
     def __str__(self):
         return f"{self.Client_ID}"
+    
+
     
     class Meta:
         db_table = ''
