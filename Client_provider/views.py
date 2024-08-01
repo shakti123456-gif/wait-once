@@ -791,10 +791,25 @@ class Client_booking_Details(viewsets.ModelViewSet):
             return Response(response, status=status.HTTP_404_NOT_FOUND)
     
     @action(detail=True,methods=['post'])
-    def reccuryAppointment(self,request):
-        pass
-        
-
+    def reoccurAppointment(self,request):
+        try:
+            data=request.data
+            therapist_avail=data.get("therapist")
+            date_appointment=data.get("appointmentDate")
+            therapy_time_start = data.get("therapyTimeStart")
+            providerDetail=data.get("provider")
+            service_id=data.get("service")
+            session_time=data.get("sessionTime")
+            LocationId=data.get("LocationId")
+            therapyappointmentType=data.get("weekly")
+            
+        except Exception as  e :
+            response = {
+                    'status': 'error',
+                    'statusCode': 404,
+                    'message': str(e),
+                    }     
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
 
 
 

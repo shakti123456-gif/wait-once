@@ -1,4 +1,4 @@
-from Client_provider.models import Location,Service,Provider_employee,Therapist
+from Client_provider.models import Location,Service,Provider_employee,Therapist,Provider
 from rest_framework import serializers
 
 
@@ -47,3 +47,14 @@ class ProviderEmployee(serializers.ModelSerializer):
     class Meta:
         model = Provider_employee
         fields = ["employeeId", "label","type"]
+
+
+class ProviderSerializerdetailWeb(serializers.ModelSerializer):
+    label = serializers.CharField(source='providerName')
+    class Meta:
+        model = Provider
+        fields = ['id','label','providerNum','providerType','email','ndisNumber',
+              'abn','ageGroup','web','chain','dva',
+              'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
+              'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
+        read_only_fields = fields

@@ -440,17 +440,17 @@ class User_add_children(generics.CreateAPIView):
     
     def create(self,request,**kwargs):
         try:
-            addChildren_data = request.data.pop('addChildren', None)
+            addChildrenData = request.data
             mobileuserId=request.headers.get("userId")
-            if not addChildren_data:
+            if not addChildrenData:
                 response = {
                             'status': 'error',
                             'status-code': 400,
                             'message': 'please add children details',
                             }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
-            insuranceType=addChildren_data.get('insuranceType',None) 
-            serilizers=ClientSubSerializer(data=addChildren_data)
+            insuranceType=addChildrenData.get('insuranceType',None) 
+            serilizers=ClientSubSerializer(data=addChildrenData)
             if serilizers.is_valid():
                 insuranceNumber = serilizers.validated_data.get("insuranceNumber", None)
                 existing_insurance_numbers = set(Client_sub_view.objects.values_list('insuranceNumber', flat=True))
@@ -505,7 +505,7 @@ class User_add_children(generics.CreateAPIView):
             _userId=request.headers.get("userId")
             if not clientId:
                 raise Exception("please provide ClientId in headers")
-            update_data = request.data.pop('updateChildren', None)
+            update_data = request.data
             if not update_data:
                 raise Exception("Please provide updateChildren in body")
             insuranceNumber = update_data.get("insuranceNumber", None)
