@@ -747,7 +747,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
             dataService=Service.objects.filter(service_id__in=serviceDataId)
             serviceSerializer=ServiceSerializerdetailAppointment(dataService,many=True)
             response = {
-                            'status': 'Success',
+                            'status': 'success',
                             'statusCode': 200,
                             'message': 'request Successfull',
                             'data':serviceSerializer.data
@@ -775,12 +775,11 @@ class Client_booking_Details(viewsets.ModelViewSet):
             dataTherapist=Therapist.objects.filter(therapist_id__in=therapistDataId).all()
             serviceSerializer=therapistSerializer(dataTherapist,many=True)
             response = {
-                        'status': 'Success',
+                        'status': 'success',
                         'statusCode': 200,
                         'message': 'request successfull',
                         'data':serviceSerializer.data
-                    } 
-                        
+                    }   
             return Response(response, status=status.HTTP_200_OK)
            
         except Exception as  e :
