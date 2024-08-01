@@ -747,7 +747,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
             dataService=Service.objects.filter(service_id__in=serviceDataId)
             serviceSerializer=ServiceSerializerdetailAppointment(dataService,many=True)
             response = {
-                            'status': '200',
+                            'status': 'Success',
                             'statusCode': 200,
                             'message': 'request Successfull',
                             'data':serviceSerializer.data
