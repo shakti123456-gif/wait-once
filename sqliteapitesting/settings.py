@@ -75,6 +75,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sqliteapitesting.wsgi.application'
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -104,7 +106,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
+
 USE_I18N = True
+
 USE_TZ = True
 
 
@@ -189,10 +193,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 CELERY_RESULT_BACKEND = 'django-db'
 
-CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net','http://localhost:3000']
-
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = [
-    'content-type',
-    'Authorization',
-]
+CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net']
