@@ -520,10 +520,10 @@ class User_add_children(generics.CreateAPIView):
             instance = self.get_object(clientId)
             data_check=Client_details_view.objects.get(Client_auth__userId=_userId)
             if not data_check.addChildren.filter(clientSubId=instance.clientSubId).exists():
-                raise Exception("Child instance does not exist in client's children list.")
+                raise Exception("Child instance does not exist in users's children list.")
             
-            serializer = ClientSubSerializer(instance, data=update_data, partial=True)
-            if serializer.is_valid():
+            serializer = ClientSubSerializer(instance, data=update_data, partial=True) 
+            if serializer.is_valid(): 
                 serializer.save()
                 response = {
                     'status': 'success',
