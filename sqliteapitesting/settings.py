@@ -15,7 +15,7 @@ DEBUG = os.environ.get("debug")
 
 ALLOWED_HOSTS = ['wait-once-help.azurewebsites.net','localhost','127.0.0.1','169.254.130.3']
 
-AUTH_USER_MODEL = 'mobile_api_user.User_mobile'
+AUTH_USER_MODEL = 'mobile_api_user.User_mobile' 
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -40,8 +40,14 @@ INSTALLED_APPS = [
     'webapp'
 ]
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -71,7 +77,6 @@ TEMPLATES = [
 
 
 WSGI_APPLICATION = 'sqliteapitesting.wsgi.application'
-
 
 
 DATABASES = {
@@ -174,12 +179,14 @@ AUTHENTICATION_BACKENDS = ['mobile_api_user.authentication_backends.userlogin']
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')  
+
 
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  
+
+#HTTPS Settings
+
 
 CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 CELERY_RESULT_BACKEND = 'django-db'
@@ -187,3 +194,8 @@ CELERY_RESULT_BACKEND = 'django-db'
 
 
 CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net']
+
+
+
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
