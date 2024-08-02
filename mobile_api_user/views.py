@@ -501,10 +501,10 @@ class User_add_children(generics.CreateAPIView):
 
     def put(self,request,**kwargs):
         try:
-            clientId=request.headers.get("clientId")
+            clientId=request.headers.get("childrenId")
             _userId=request.headers.get("userId")
             if not clientId:
-                raise Exception("please provide ClientId in headers")
+                raise Exception("please provide ChildrenId in headers")
             update_data = request.data
             if not update_data:
                 raise Exception("Please provide updateChildren in body")

@@ -332,4 +332,7 @@ class therapistAvailability(models.Model):
         return f"{self.therapist_id.therapist_auth.firstName} - {self.date}   Time Available  {self.startTime}  to   {self.endtime}"
 
 
+
+class therapistPostReoccurAppoinment(models.Model):
+    pass
     

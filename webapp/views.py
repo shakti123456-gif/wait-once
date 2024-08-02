@@ -27,7 +27,7 @@ class ProviderViewSet(viewsets.ModelViewSet):
             location_serializer = LocationSerializerdetail(locations_data, many=True)
             therapist_serializer = therapistSerializer(therapist_details, many=True)
             service_serializer = ServiceSerializerdetail(service_details, many=True)
-            provider_serializer = ProviderSerializerdetail(provider_data)
+            provider_serializer = ProviderSerializerdetailWeb(provider_data)
             dataEmployeeSerializer=ProviderEmployee(dataEmployee,many=True)
             serialized_data = provider_serializer.data
             serialized_data['children'] = [

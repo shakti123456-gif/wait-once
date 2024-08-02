@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-7)4os+rn(rx!molulb$)jcr3)1=a=aj4h7^1afy%+la+t5(&3a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['wait-once-help.azurewebsites.net','localhost','127.0.0.1','169.254.130.3']
 
@@ -218,4 +218,4 @@ CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 CELERY_RESULT_BACKEND = 'django-db'
 
 
-CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net']
+# CSRF_TRUSTED_ORIGINS=['https://wait-once-help.azurewebsites.net','localhost']

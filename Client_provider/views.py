@@ -798,11 +798,11 @@ class Client_booking_Details(viewsets.ModelViewSet):
             date_appointment=data.get("appointmentDate")
             therapy_time_start = data.get("therapyTimeStart")
             providerDetail=data.get("provider")
-            service_id=data.get("service")
+            serviceId=data.get("service")
             session_time=data.get("sessionTime")
             LocationId=data.get("LocationId")
             therapyappointmentType=data.get("weekly")
-            
+
         except Exception as  e :
             response = {
                     'status': 'error',
