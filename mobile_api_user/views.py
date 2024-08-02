@@ -478,8 +478,7 @@ class User_add_children(generics.CreateAPIView):
                     'statusCode': 200,
                     'message': 'Children Successfully added'
                 }
-                return Response(response, status=status.HTTP_200_OK)
-            
+                return Response(response, status=status.HTTP_200_OK)       
             else:
                 details = [{'field': key, 'issue': error[0]} for key, error in serilizers.errors.items()]
                 response = {

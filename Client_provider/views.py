@@ -415,114 +415,121 @@ class Client_booking_Details(viewsets.ModelViewSet):
     
     @action(detail=True,methods=['post'])
     def create_booking1(self,request,pk=None):
-        data=request.data
-        therapist_avail=data.get("therapist",None)
-        date_appointment=data.get("appointmentDate",None)
-        therapy_time_start = data.get("therapyTimeStart",None)
-        providerDetail=data.get("provider")
-        service_id=data.get("service")
-        session_time=data.get("sessionTime","")
-        LocationId=data.get("LocationId")
         try:
-            date_appointment = datetime.strptime(date_appointment, '%d-%m-%Y').strftime('%Y-%m-%d')
-        except:
-            return JsonResponse({"error": "please enter format day/month/year"}, status=400)
-        
-        try:
-            therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M:%S").time()
-        except ValueError:
-            return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
-        # try:
-        #     session_hours, session_minutes = map(int, session_time.split(":"))
-        #     session_duration = timedelta(hours=session_hours, minutes=session_minutes)
-        # except ValueError:
-        #     return JsonResponse({"error": "Invalid session duration format"}, status=400)
-        
-        if therapist_avail:
-            therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
-                                                                   date=date_appointment,Provider__providerId=providerDetail).first()
-            available=False
-            if therapist_avail_date:
-                data_avalable_solts=therapist_avail_date.available_slots
-                for time_slot in data_avalable_solts:
-                    time1,time2=time_slot.split("-")
-                    timeslot1 = datetime.strptime(time1, "%H:%M:%S").time()
-                    timeslot2 = datetime.strptime(time2, "%H:%M:%S").time()
-                    if therapy_time_start==timeslot1:
-                        available=True
-                        break
-                status_check="confirmed" 
-                if available:
-                    appointments = Appointment1.objects.filter(
-                            appointmentDate=date_appointment, 
-                            therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1)
+            data=request.data
+            therapist_avail=data.get("therapist",None)
+            date_appointment=data.get("appointmentDate",None)
+            therapy_time_start = data.get("therapyTimeStart",None)
+            providerDetail=data.get("provider")
+            service_id=data.get("service")
+            session_time=data.get("sessionTime","")
+            LocationId=data.get("LocationId")
+            try:
+                date_appointment = datetime.strptime(date_appointment, '%d-%m-%Y').strftime('%Y-%m-%d')
+            except:
+                return JsonResponse({"error": "please enter format day/month/year"}, status=400)
             
-                    if appointments.exists():
-                        # response = {
-                        #     'status': 'error',
-                        #     'statusCode': 404,
-                        #     'message': 'slot is already booked',
-                        # }
-                        # return Response(response, status=status.HTTP_404_NOT_FOUND)
-                        status_check="waiting" 
+            try:
+                therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M:%S").time()
+            except ValueError:
+                return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
+           
+            
+            if therapist_avail:
+                therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
+                                                                    date=date_appointment,Provider__providerId=providerDetail).first()
+                available=False
+                if therapist_avail_date:
+                    data_avalable_solts=therapist_avail_date.available_slots
+                    for time_slot in data_avalable_solts:
+                        time1,time2=time_slot.split("-")
+                        timeslot1 = datetime.strptime(time1, "%H:%M:%S").time()
+                        timeslot2 = datetime.strptime(time2, "%H:%M:%S").time()
+                        if therapy_time_start==timeslot1:
+                            available=True
+                            break
+                    status_check="confirmed" 
+                    if available:
+                        appointments = Appointment1.objects.filter(
+                                appointmentDate=date_appointment, 
+                                therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1).first()
+                
+                        if appointments:
+                            if appointments.clientData.userId==request.user.userId:
+                                response = {
+                                    'status': 'error',
+                                    'statusCode': 404,
+                                    'message': 'you are already booked this slot',
+                                }
+                                return Response(response, status=status.HTTP_404_NOT_FOUND)
+                            status_check="waiting" 
+                    else:
+                        response = {
+                                'status': 'error',
+                                'statusCode': 404,
+                                'message': 'slot not found',
+                            }
+                        return Response(response, status=status.HTTP_404_NOT_FOUND)
+                        # for apointment in appointments:
+                        #     appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
+                        #     appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
+
+                        # # Calculate new appointment start and end times as timedelta durations
+                        #     new_appointment_start = timedelta(hours=therapy_time_start.hour, minutes=therapy_time_start.minute)
+                        #     new_appointment_end = new_appointment_start + session_duration
+
+                        # # Check if new appointment overlaps with any existing appointment
+                        #     if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
+                        #         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
                 else:
                     response = {
-                            'status': 'error',
-                            'statusCode': 404,
-                            'message': 'slot not found',
-                        }
+                        'status': 'error',
+                        'statusCode': 400,
+                        'message': 'Therapist Data not found',
+                    }        
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
-                    # for apointment in appointments:
-                    #     appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
-                    #     appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
+                    
+                provider=Provider.objects.filter(providerId=providerDetail).first()
+                service=Service.objects.filter(service_id=service_id).first()
+                location=Location.objects.filter(location_id=LocationId).first()
 
-                    # # Calculate new appointment start and end times as timedelta durations
-                    #     new_appointment_start = timedelta(hours=therapy_time_start.hour, minutes=therapy_time_start.minute)
-                    #     new_appointment_end = new_appointment_start + session_duration
+                new_appointment = Appointment1(
+                    clientData=request.user,
+                    providerData=provider,
+                    therapistData=therapist_avail_date.therapist_id,
+                    serviceData=service,
+                    appointmentDate=date_appointment,
+                    TherapyTime_start=therapy_time_start,
+                    TherapyTime_end=timeslot2,
+                    locationData=location,
+                    status=status_check,
+                    isconfimed=True
+                )
+                new_appointment.save()
+                if status_check=="confirmed":
+                    response_data = {
+                        'status': 'success',
+                        'statusCode': 200,
+                        'message':"Your Appointment is Confirmed"
+                    }
+                else:
+                    response_data = {
+                        'status': 'success',
+                        'statusCode': 200,
+                        'message':"Your Appointment is in waiting list"
+                    }
 
-                    # # Check if new appointment overlaps with any existing appointment
-                    #     if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
-                    #         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
-            else:
-                response = {
-                    'status': 'error',
-                    'statusCode': 400,
-                    'message': 'Therapist Data not found',
-                }        
-                return Response(response, status=status.HTTP_404_NOT_FOUND)
-                
-            provider=Provider.objects.filter(providerId=providerDetail).first()
-            service=Service.objects.filter(service_id=service_id).first()
-            location=Location.objects.filter(location_id=LocationId).first()
 
-            new_appointment = Appointment1(
-                clientData=request.user,
-                providerData=provider,
-                therapistData=therapist_avail_date.therapist_id,
-                serviceData=service,
-                appointmentDate=date_appointment,
-                TherapyTime_start=therapy_time_start,
-                TherapyTime_end=timeslot2,
-                locationData=location,
-                status=status_check,
-                isconfimed=True
-            )
-            new_appointment.save()
-            if status_check=="confirmed":
-                response_data = {
-                    'status': 'success',
-                    'statusCode': 200,
-                    'message':"Your Appointment is Confirmed"
-                }
-            else:
-                response_data = {
-                    'status': 'success',
-                    'statusCode': 200,
-                    'message':"Your Appointment is in waiting list"
-                }
-
+                return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            response_data = {
+                        'status': 'error',
+                        'statusCode': 404,
+                        'message':str(e)
+                    }
 
             return Response(response_data, status=status.HTTP_200_OK)
+
     
     @action(detail=True,methods=['post'])
     def delete_user_apointment(self,request):
@@ -531,6 +538,15 @@ class Client_booking_Details(viewsets.ModelViewSet):
             appointment_id = serializer.validated_data['appointmentId']
             try:
                 appointment = Appointment1.objects.get(id=appointment_id)
+                if appointment.status=="confirmed":
+                    appointment_second_record = Appointment1.objects.filter(
+                        appointmentDate=appointment.appointmentDate,
+                        TherapyTime_start=appointment.TherapyTime_start
+                        ).order_by('-createdAt')
+                    if appointment_second_record.count() > 1:
+                        second_record = appointment_second_record[1]
+                        second_record.status = "confirmed"
+                        second_record.save()
                 appointment.delete()
                 response = {
                     'status': 'Success',
@@ -538,11 +554,11 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     'message': 'Appointment successfully deleted',
                 }
                 return Response(response,status=status.HTTP_204_NO_CONTENT)
-            except Appointment1.DoesNotExist:
+            except Exception as e :
                 response = {
                     'status': 'error',
                     'statusCode': 404,
-                    'message': 'Appointment not found',
+                    'message': str(e),
                 }     
                 return Response(response, status=status.HTTP_404_NOT_FOUND)
         else:

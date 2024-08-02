@@ -244,6 +244,8 @@ class Appointment1(models.Model):
         default=WAITING,
     )
     isconfimed=models.BooleanField(default=False)
+    createdAt=models.DateTimeField(null=True,blank=True)
+    lastUpdate=models.DateTimeField(null=True,blank=True)
 
     def __str__(self):
         return f"Appointment {self.pk}  --- {self.appointmentDate}"
@@ -252,7 +254,9 @@ class Appointment1(models.Model):
         pass
 
     def save(self, *args, **kwargs):
-        self.full_clean()  
+        if not self.createdAt:
+            self.createdAt = datetime.now() + timedelta(hours=5, minutes=30)
+        self.lastUpdate = datetime.now() + timedelta(hours=5, minutes=30)
         super(Appointment1, self).save(*args, **kwargs)
     
     class Meta:
