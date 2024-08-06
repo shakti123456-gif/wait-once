@@ -13,7 +13,7 @@ class ProviderViewSet(viewsets.ModelViewSet):
     def details_provider(self, request, pk=None):
         try:
             provider_key = request.headers.get('providerId')
-            provider_data = Provider.objects.filter(providerId=provider_key).first()
+            provider_data = Provider.objects.filter(providerId=1).first()
             if not provider_data:
                 response = {
                     'status': 'error',

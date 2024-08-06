@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('mobile_api_user', '0016_alter_client_details_view_add_caretaker_detail_and_more'),
     ]
-
+    
     operations = [
         migrations.RemoveField(
             model_name='client_sub_view',

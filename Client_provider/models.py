@@ -257,7 +257,7 @@ class Appointment1(models.Model):
         if not self.createdAt:
             self.createdAt = datetime.now() + timedelta(hours=5, minutes=30)
         self.lastUpdate = datetime.now() + timedelta(hours=5, minutes=30)
-        super(Appointment1, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
     
     class Meta:
         managed = True
@@ -337,6 +337,37 @@ class therapistAvailability(models.Model):
 
 
 
-class therapistPostReoccurAppoinment(models.Model):
-    pass
+class clientPrebookAppointments(models.Model):
+    clientPreId = models.IntegerField(primary_key=True)
+    clientDetail = models.ForeignKey(Client_details_view, on_delete=models.CASCADE)
+    therapist = models.ForeignKey(Therapist, on_delete=models.CASCADE)
+    startdate = models.DateField()
+    endDate = models.DateField()
+    locationData = models.ForeignKey(Location, on_delete=models.CASCADE)
+    
+    WEEKLY = 'weekly'
+    DAILY = 'daily'
+    FORTNIGHTLY = 'fortnight'
+    Monthly = 'alternativeType'
+
+    APPOINTMENT_TYPE_CHOICES = [
+        (WEEKLY, 'Weekly'),
+        (DAILY, 'Daily'),
+        (FORTNIGHTLY, 'Fortnightly'),
+        (Monthly, 'Monthly'),
+    ]
+
+    appointmentType = models.CharField(
+        max_length=15,
+        choices=APPOINTMENT_TYPE_CHOICES,
+        default=WEEKLY,
+    )
+    
+    def __str__(self):
+        return f"{self.clientPreId} - {self.appointmentType}"
+    
+    
+
+
+
     

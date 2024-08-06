@@ -452,16 +452,17 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     if available:
                         appointments = Appointment1.objects.filter(
                                 appointmentDate=date_appointment, 
-                                therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=timeslot1).first()
-                
+                                therapistData=therapist_avail_date.therapist_id,TherapyTime_start=timeslot1)
+
                         if appointments:
-                            if appointments.clientData.userId==request.user.userId:
-                                response = {
-                                    'status': 'error',
-                                    'statusCode': 404,
-                                    'message': 'you are already booked this slot',
-                                }
-                                return Response(response, status=status.HTTP_404_NOT_FOUND)
+                            for appoint in appointments:
+                                if appoint.clientData.userId==request.user.userId:
+                                    response = {
+                                        'status': 'error',
+                                        'statusCode': 404,
+                                        'message': 'you are already booked this slot',
+                                    }
+                                    return Response(response, status=status.HTTP_404_NOT_FOUND)
                             status_check="waiting" 
                     else:
                         response = {
@@ -470,17 +471,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                                 'message': 'slot not found',
                             }
                         return Response(response, status=status.HTTP_404_NOT_FOUND)
-                        # for apointment in appointments:
-                        #     appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
-                        #     appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
-
-                        # # Calculate new appointment start and end times as timedelta durations
-                        #     new_appointment_start = timedelta(hours=therapy_time_start.hour, minutes=therapy_time_start.minute)
-                        #     new_appointment_end = new_appointment_start + session_duration
-
-                        # # Check if new appointment overlaps with any existing appointment
-                        #     if (new_appointment_start < appointment_end and new_appointment_end > appointment_start):
-                        #         return JsonResponse({"error": "Appointment already booked at this time"}, status=409)
+                        
                 else:
                     response = {
                         'status': 'error',
@@ -503,14 +494,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     TherapyTime_end=timeslot2,
                     locationData=location,
                     status=status_check,
-                    isconfimed=True
+                    isconfimed = True if status_check == "confirmed" else False
                 )
                 new_appointment.save()
                 if status_check=="confirmed":
                     response_data = {
                         'status': 'success',
                         'statusCode': 200,
-                        'message':"Your Appointment is Confirmed"
+                        'message':"your appointment is confirmed"
                     }
                 else:
                     response_data = {
@@ -518,7 +509,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'statusCode': 200,
                         'message':"Your Appointment is in waiting list"
                     }
-
 
                 return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -542,10 +532,12 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     appointment_second_record = Appointment1.objects.filter(
                         appointmentDate=appointment.appointmentDate,
                         TherapyTime_start=appointment.TherapyTime_start
-                        ).order_by('-createdAt')
-                    if appointment_second_record.count() > 1:
+                        ).order_by('createdAt')
+                    if appointment_second_record.count() >= 1:
                         second_record = appointment_second_record[1]
+                        print(second_record)
                         second_record.status = "confirmed"
+                        second_record.isconfimed = True
                         second_record.save()
                 appointment.delete()
                 response = {
@@ -810,14 +802,37 @@ class Client_booking_Details(viewsets.ModelViewSet):
     def reoccurAppointment(self,request):
         try:
             data=request.data
-            therapist_avail=data.get("therapist")
-            date_appointment=data.get("appointmentDate")
-            therapy_time_start = data.get("therapyTimeStart")
-            providerDetail=data.get("provider")
-            serviceId=data.get("service")
-            session_time=data.get("sessionTime")
-            LocationId=data.get("LocationId")
-            therapyappointmentType=data.get("weekly")
+            therapistId=data.get("therapist",None)
+            startDate=data.get("startDate",None)
+            endDate= data.get("endDate",None)
+            providerId=data.get("provider",None)
+            serviceId=data.get("service",None)
+            therapyTimeStart=data.get("sessionTime",None)
+            locationId=data.get("locationId",None)
+            appointmentType=data.get("appointmentType",None)
+            
+            if isinstance(start_date, str):
+                start_date = datetime.strptime(startDate, '%Y-%m-%d')
+            if isinstance(end_date, str):
+                end_date = datetime.strptime(endDate, '%Y-%m-%d')
+
+            specific_weekdays = []
+            current_date = start_date
+            target_weekday = current_date.weekday()
+
+        # Fetch all dates with the same weekday between start_date and end_date
+            while current_date <= end_date:
+                if current_date.weekday() == target_weekday:
+                    specific_weekdays.append(current_date)
+                current_date += timedelta(days=1)
+
+            response = {
+                        'status': 'success',
+                        'statusCode': 200,
+                        'message': 'request successfully',
+                        'data':str(specific_weekdays)
+                    }   
+            return Response(response, status=status.HTTP_200_OK)
 
         except Exception as  e :
             response = {
