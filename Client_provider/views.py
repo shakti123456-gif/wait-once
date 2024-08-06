@@ -1,6 +1,6 @@
 from mobile_api_user.authentication import JWTAuthentication
 from .models import Provider,Therapist,Service,therapist_service,Location,therapistAvailability,\
-    Appointment,Appointment1
+    Appointment,Appointment1,clientPrebookAppointments
 from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,\
     AppointmentSerializer,AppointmentSerializerfetch,TherapistAvailSerializer ,RescheduleAppointmentSerializer,ServiceSerializerdetailAppointment
 from rest_framework.permissions import IsAuthenticated
@@ -533,9 +533,8 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         appointmentDate=appointment.appointmentDate,
                         TherapyTime_start=appointment.TherapyTime_start
                         ).order_by('createdAt')
-                    if appointment_second_record.count() >= 1:
+                    if appointment_second_record.count() >1:
                         second_record = appointment_second_record[1]
-                        print(second_record)
                         second_record.status = "confirmed"
                         second_record.isconfimed = True
                         second_record.save()
@@ -811,27 +810,32 @@ class Client_booking_Details(viewsets.ModelViewSet):
             locationId=data.get("locationId",None)
             appointmentType=data.get("appointmentType",None)
             
-            if isinstance(start_date, str):
-                start_date = datetime.strptime(startDate, '%Y-%m-%d')
-            if isinstance(end_date, str):
-                end_date = datetime.strptime(endDate, '%Y-%m-%d')
 
-            specific_weekdays = []
-            current_date = start_date
-            target_weekday = current_date.weekday()
+            if appointmentType=="weekly":
+                start_date = datetime.strptime(startDate, '%d-%m-%Y')
+                end_date = datetime.strptime(endDate, '%d-%m-%Y')
 
-        # Fetch all dates with the same weekday between start_date and end_date
-            while current_date <= end_date:
-                if current_date.weekday() == target_weekday:
-                    specific_weekdays.append(current_date)
-                current_date += timedelta(days=1)
+                specific_weekdays = []
+                current_date = start_date
+                target_weekday = current_date.weekday()
 
-            response = {
-                        'status': 'success',
-                        'statusCode': 200,
-                        'message': 'request successfully',
-                        'data':str(specific_weekdays)
-                    }   
+                while current_date <= end_date:
+                    if current_date.weekday() == target_weekday:
+                        specific_weekdays.append(current_date)
+                    current_date += timedelta(days=1)
+                    provider=Provider.objects.filter(providerId=providerDetail).first()
+                    service=Service.objects.filter(service_id=service_id).first()
+                    location=Location.objects.filter(location_id=LocationId).first()
+
+                clientPrebookAppointments.objects.create(
+
+                )
+                response = {
+                            'status': 'success',
+                            'statusCode': 200,
+                            'message': 'request successfully',
+                            'data':str(specific_weekdays)
+                        }   
             return Response(response, status=status.HTTP_200_OK)
 
         except Exception as  e :
