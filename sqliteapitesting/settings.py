@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY", "default_secret_key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("debug")
+DEBUG = True
 
 ALLOWED_HOSTS = ['wait-once-help.azurewebsites.net','localhost','127.0.0.1','169.254.130.3']
 # ALLOWED_HOSTS = ['*']
@@ -83,6 +83,20 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'wait-once-stg',
+#         'USER': 'waitOnce',
+#         'PASSWORD': 'Ss9319428987@',
+#         'HOST':'wait-once.mysql.database.azure.com',
+#         'PORT':'3306',
+#     }
+# }
+
+
 
 
 

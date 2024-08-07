@@ -549,8 +549,29 @@ class User_add_children(generics.CreateAPIView):
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
+class User_mobile_check(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            mobileNumber=request.headers.get("mobileNumber",None)
+            if not mobileNumber:
+                raise Exception("please provide mobileNumber in headers")
+            
+            user_stat = User_mobile.objects.get(mobileNumber=mobileNumber)
+            response = {
+                'status': 'Success',
+                'statusCode': 200,
+                'message': ' mobile number is exist in database',
+                }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-
+                
+        except Exception as e:
+            response = {
+                'status': 'error',
+                'statusCode': 400,
+                'message': str(e),
+                }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 

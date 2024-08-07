@@ -16,7 +16,7 @@ class Provider_Details(admin.ModelAdmin):
     fields = ['providerName','providerNum','providerType','therapistServicemap','email','ndisNumber',
               'abn', 'ProviderEmployers','ProviderLocations','ageGroup','web','chain','phoneNo','dva' 
                'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
-              'state','PIN','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
+              'state','PIN','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4','reapointment_id']
     
 
 class service_details(admin.ModelAdmin):
@@ -47,3 +47,4 @@ admin.site.register(Therapist_working_time)
 admin.site.register(Therapist_unavailability)
 admin.site.register(therapistAvailability,TherapistAvailAdmin)
 admin.site.register(Appointment1)
+admin.site.register(clientPrebookAppointments)

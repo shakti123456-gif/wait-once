@@ -40,13 +40,12 @@ class therapistSerializer(serializers.ModelSerializer):
         return "Not added"
 
 class ProviderEmployee(serializers.ModelSerializer):
-    employeeId= serializers.IntegerField(source='id', read_only=True)
     label = serializers.CharField(source='usersName', read_only=True)
     type = serializers.CharField(source='userType', read_only=True)
    
     class Meta:
         model = Provider_employee
-        fields = ["employeeId", "label","type"]
+        fields = ["id", "label","type"]
 
 
 class ProviderSerializerdetailWeb(serializers.ModelSerializer):

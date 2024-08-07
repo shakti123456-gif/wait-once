@@ -130,7 +130,7 @@ class AppointmentSerializerfetch(serializers.ModelSerializer):
 
     class Meta:
         model = Appointment1
-        fields = ['appointmentId','clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapyStartTime','therapyEndTime','status','isConfimed']
+        fields = ['appointmentId','clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapyStartTime','therapyEndTime','status','isConfimed','isTherapistChanged','therapistComments']
 
 
 class TherapistAvailSerializer(serializers.Serializer):

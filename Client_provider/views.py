@@ -317,7 +317,6 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 data_avail = serializer.validated_data.get("availablityDate")
                 therapist_data = therapistAvailability.objects.get(date=data_avail)
                 slots = therapist_data.available_slots
-
                 response_data = {
                     'status': 'success',
                     'statusCode': 200,
@@ -800,51 +799,94 @@ class Client_booking_Details(viewsets.ModelViewSet):
     @action(detail=True,methods=['post'])
     def reoccurAppointment(self,request):
         try:
-            data=request.data
-            therapistId=data.get("therapist",None)
-            startDate=data.get("startDate",None)
-            endDate= data.get("endDate",None)
-            providerId=data.get("provider",None)
-            serviceId=data.get("service",None)
-            therapyTimeStart=data.get("sessionTime",None)
-            locationId=data.get("locationId",None)
-            appointmentType=data.get("appointmentType",None)
-            
+            data = request.data
+            therapistId = data.get("therapistId", None)
+            startDate = data.get("startDate", None)
+            endDate = data.get("endDate", None)
+            providerId = data.get("providerId", None)
+            serviceId = data.get("serviceId", None)
+            therapyTimeStart = data.get("therapyTimeStart", None)
+            locationId = data.get("locationId", None)
+            appointmentType = data.get("appointmentType", None)
+            specific_weekdays = []
+            start_date = datetime.strptime(startDate, '%d-%m-%Y')
+            end_date = datetime.strptime(endDate, '%d-%m-%Y')
+            current_date=start_date
+            if appointmentType == "daily":
+                while current_date <= end_date:
+                    specific_weekdays.append(current_date)
+                    current_date += timedelta(days=1)
 
-            if appointmentType=="weekly":
-                start_date = datetime.strptime(startDate, '%d-%m-%Y')
-                end_date = datetime.strptime(endDate, '%d-%m-%Y')
-
-                specific_weekdays = []
+            elif appointmentType == "fortnightly":
+                while current_date <= end_date:
+                    specific_weekdays.append(current_date)
+                    current_date += timedelta(weeks=2)
+        
+            elif appointmentType == "weekly":
                 current_date = start_date
                 target_weekday = current_date.weekday()
-
                 while current_date <= end_date:
                     if current_date.weekday() == target_weekday:
                         specific_weekdays.append(current_date)
                     current_date += timedelta(days=1)
-                    provider=Provider.objects.filter(providerId=providerDetail).first()
-                    service=Service.objects.filter(service_id=service_id).first()
-                    location=Location.objects.filter(location_id=LocationId).first()
-
-                clientPrebookAppointments.objects.create(
-
+                print("--------------",specific_weekdays)
+            if not specific_weekdays:
+                raise Exception("we donot find any dates")    
+            providerDetails_data = Provider.objects.get(providerId=providerId)
+            therapist_data = Therapist.objects.get(therapist_id=therapistId)
+            location_data = Location.objects.get(location_id=locationId)
+            service_data = Service.objects.get(service_id=serviceId)
+            startDate = datetime.strptime(startDate, "%d-%m-%Y").date()
+            endDate = datetime.strptime(endDate, "%d-%m-%Y").date()
+            client_prebook = clientPrebookAppointments(
+                    clientDetail=request.user,
+                    therapistDetails=therapist_data,
+                    providerDetails=providerDetails_data,
+                    serviceData=service_data,
+                    startdate=startDate,
+                    endDate=endDate,
+                    locationData=location_data,
+                    appointmentType=appointmentType
                 )
-                response = {
-                            'status': 'success',
-                            'statusCode': 200,
-                            'message': 'request successfully',
-                            'data':str(specific_weekdays)
-                        }   
+            client_prebook.save()
+            list_of_appointments = []
+            therapy_time_start = datetime.strptime(therapyTimeStart, "%H:%M:%S").time()
+
+            for date in specific_weekdays:
+                therapy_time_end = (datetime.combine(datetime.today(), therapy_time_start) + timedelta(minutes=30)).time()
+                appointment = Appointment1(
+                        clientData=request.user,
+                        providerData=providerDetails_data,
+                        therapistData=therapist_data,
+                        serviceData=service_data,
+                        appointmentDate=date,
+                        locationData=location_data,
+                        TherapyTime_start=therapy_time_start,
+                        TherapyTime_end=therapy_time_end,
+                        status='waiting',
+                        isconfimed=False,
+                        reapointment_id=client_prebook
+                    )
+                list_of_appointments.append(appointment)
+            print(list_of_appointments)
+            Appointment1.objects.bulk_create(list_of_appointments)
+            response = {
+                    'status': 'success',
+                    'statusCode': 200,
+                    'message': 'Request successfully accepted, provider let us know'
+                }
             return Response(response, status=status.HTTP_200_OK)
 
-        except Exception as  e :
+        except Exception as e:
             response = {
-                    'status': 'error',
-                    'statusCode': 404,
-                    'message': str(e),
-                    }     
+                'status': 'error',
+                'statusCode': 404,
+                'message': str(e),
+            }
             return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+
+
 
 
 

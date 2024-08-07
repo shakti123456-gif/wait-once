@@ -211,6 +211,41 @@ class Appointment(models.Model):
         verbose_name = 'Schedules'
         verbose_name_plural = 'Schedules'
 
+class clientPrebookAppointments(models.Model):
+    clientPreId = models.AutoField(primary_key=True)
+    clientDetail = models.ForeignKey(User_mobile, on_delete=models.CASCADE,null=True,blank=True)
+    therapistDetails = models.ForeignKey(Therapist, on_delete=models.CASCADE,null=True,blank=True)
+    providerDetails = models.ForeignKey(Provider, on_delete=models.CASCADE,null=True,blank=True)
+    serviceData=models.ForeignKey(Service,on_delete=models.CASCADE,null=True,blank=True)
+    startdate = models.DateField(null=True,blank=True)
+    endDate = models.DateField(null=True,blank=True)
+    locationData = models.ForeignKey(Location, on_delete=models.CASCADE,null=True,blank=True)
+    
+    WEEKLY = 'weekly'
+    DAILY = 'daily'
+    FORTNIGHTLY = 'fortnight'
+    Monthly = 'alternativeType'
+
+    APPOINTMENT_TYPE_CHOICES = [
+        (WEEKLY, 'Weekly'),
+        (DAILY, 'Daily'),
+        (FORTNIGHTLY, 'Fortnightly'),
+        (Monthly, 'Monthly'),
+    ]
+    appointmentType = models.CharField(
+        max_length=15,
+        choices=APPOINTMENT_TYPE_CHOICES,
+        default=WEEKLY,
+    )
+    
+    def __str__(self):
+        return f"{self.clientPreId} - {self.appointmentType}"
+    
+    class Meta:
+        managed = True
+        verbose_name = 'client Prebook Appointment'
+        verbose_name_plural = 'client Prebook Appointments'
+
 
 
 class Appointment1(models.Model):
@@ -223,6 +258,7 @@ class Appointment1(models.Model):
     appointmentDate = models.DateField(null=True, blank=True)
     TherapyTime_start = models.TimeField(null=True, blank=True)
     TherapyTime_end = models.TimeField(null=True, blank=True)
+    reapointment_id=models.ForeignKey(clientPrebookAppointments, on_delete=models.CASCADE, null=True, blank=True)
     THIRTY_MINUTES = '30 minutes'
     ONE_HOUR = '1 hour'
     SESSION_TIME_CHOICES = [
@@ -246,6 +282,8 @@ class Appointment1(models.Model):
     isconfimed=models.BooleanField(default=False)
     createdAt=models.DateTimeField(null=True,blank=True)
     lastUpdate=models.DateTimeField(null=True,blank=True)
+    isTherapistChanged=models.BooleanField(default=False)
+    therapistComments=models.TextField(null=True,blank=True)
 
     def __str__(self):
         return f"Appointment {self.pk}  --- {self.appointmentDate}"
@@ -337,35 +375,7 @@ class therapistAvailability(models.Model):
 
 
 
-class clientPrebookAppointments(models.Model):
-    clientPreId = models.IntegerField(primary_key=True)
-    clientDetail = models.ForeignKey(Client_details_view, on_delete=models.CASCADE)
-    therapist = models.ForeignKey(Therapist, on_delete=models.CASCADE)
-    startdate = models.DateField()
-    endDate = models.DateField()
-    locationData = models.ForeignKey(Location, on_delete=models.CASCADE)
-    
-    WEEKLY = 'weekly'
-    DAILY = 'daily'
-    FORTNIGHTLY = 'fortnight'
-    Monthly = 'alternativeType'
 
-    APPOINTMENT_TYPE_CHOICES = [
-        (WEEKLY, 'Weekly'),
-        (DAILY, 'Daily'),
-        (FORTNIGHTLY, 'Fortnightly'),
-        (Monthly, 'Monthly'),
-    ]
-
-    appointmentType = models.CharField(
-        max_length=15,
-        choices=APPOINTMENT_TYPE_CHOICES,
-        default=WEEKLY,
-    )
-    
-    def __str__(self):
-        return f"{self.clientPreId} - {self.appointmentType}"
-    
     
 
 

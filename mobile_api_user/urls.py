@@ -18,6 +18,7 @@ urlpatterns = [
     path('fetchapi/web',Fetch_and_update_user_web.as_view(),name="web-fetch"),
     path('user/addChildren',User_add_children.as_view(),name="addChildren"),
     path('user/updateChildren',User_add_children.as_view(),name="updateChildren"),
+    path('user/checkmobilenumber',User_mobile_check.as_view(),name="mobilenumber"),
     path('delay/',show,name="show-error")
 ]
 
