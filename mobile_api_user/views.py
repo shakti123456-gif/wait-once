@@ -15,6 +15,7 @@ from .authentication import JWTAuthentication
 from .task import add
 from django.http import JsonResponse
 from rest_framework.decorators import api_view
+from mobile_api_user.CustomErrors import Error
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = ClientDetailSerializer
@@ -555,21 +556,25 @@ class User_mobile_check(APIView):
             mobileNumber=request.headers.get("mobileNumber",None)
             if not mobileNumber:
                 raise Exception("please provide mobileNumber in headers")
-            
             user_stat = User_mobile.objects.get(mobileNumber=mobileNumber)
             response = {
                 'status': 'Success',
                 'statusCode': 200,
-                'message': ' mobile number is exist in database',
+                'message': 'Request successful',
+                'data':{
+                    "isUserAlreadyExist": True
                 }
+                }   
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-                
         except Exception as e:
             response = {
                 'status': 'error',
                 'statusCode': 400,
-                'message': str(e),
+                'message': 'mobile number is not found',
+                'data':{
+                    "isUserAlreadyExist": False
+                }
                 }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
