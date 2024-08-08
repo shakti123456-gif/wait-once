@@ -243,8 +243,8 @@ class clientPrebookAppointments(models.Model):
     
     class Meta:
         managed = True
-        verbose_name = 'client Prebook Appointment'
-        verbose_name_plural = 'client Prebook Appointments'
+        verbose_name = 'Requested Appointment'
+        verbose_name_plural = 'Requested Appointment'
 
 
 

@@ -2,21 +2,21 @@ from django.contrib import admin
 from .models import *
 
 
-class Therapist_Details(admin.ModelAdmin):  
+class TherapistDetails(admin.ModelAdmin):  
     list_display = ('therapist_auth', 'therapist_num','alternativeMobileNumber','therapist_id')
-    fields = [ 'therapist_auth','therapist_num','service_age_group','therapist_type','expirence',
-              'dva','independent','multi_provider','multi_Location','web',
+    fields = [ 'therapist_auth','therapist_num','service_age_group','therapist_type',
+              'dva','independent','multi_provider','multi_Location','web','experience',
               'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
-              'state','PIN','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
+              'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
 
 
 class Provider_Details(admin.ModelAdmin):
   
     list_display = ('providerName','providerType','providerId')  
     fields = ['providerName','providerNum','providerType','therapistServicemap','email','ndisNumber',
-              'abn', 'ProviderEmployers','ProviderLocations','ageGroup','web','chain','phoneNo','dva' 
+              'abn', 'ProviderEmployers','ProviderLocations','ageGroup','web','chain','dva', 
                'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
-              'state','PIN','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4','reapointment_id']
+              'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
     
 
 class service_details(admin.ModelAdmin):
@@ -32,10 +32,9 @@ class TherapistAvailAdmin(admin.ModelAdmin):
         return obj.therapist_id.therapist_auth.firstName
     get_therapist_first_name.short_description = 'Therapist First Name'
 
-    
 
 
-admin.site.register(Therapist,Therapist_Details)
+admin.site.register(Therapist,TherapistDetails)
 admin.site.register(Provider,Provider_Details)
 admin.site.register(Location)
 admin.site.register(Service,service_details)

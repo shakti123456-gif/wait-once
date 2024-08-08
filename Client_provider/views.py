@@ -25,8 +25,7 @@ class ProviderViewSet(viewsets.ModelViewSet):
         if provider_name:
             queryset = queryset.filter(providerName__contains=provider_name)
         if pin_code:
-            queryset = queryset.filter(PIN=pin_code)
-
+            queryset = queryset.filter(pin=pin_code)
         return queryset
 
     @action(detail=True,methods=['post'])
@@ -829,7 +828,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     if current_date.weekday() == target_weekday:
                         specific_weekdays.append(current_date)
                     current_date += timedelta(days=1)
-                print("--------------",specific_weekdays)
             if not specific_weekdays:
                 raise Exception("we donot find any dates")    
             providerDetails_data = Provider.objects.get(providerId=providerId)
