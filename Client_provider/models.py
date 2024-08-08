@@ -237,6 +237,7 @@ class clientPrebookAppointments(models.Model):
         choices=APPOINTMENT_TYPE_CHOICES,
         default=WEEKLY,
     )
+    Approved=models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.clientPreId} - {self.appointmentType}"
@@ -258,7 +259,6 @@ class Appointment1(models.Model):
     appointmentDate = models.DateField(null=True, blank=True)
     TherapyTime_start = models.TimeField(null=True, blank=True)
     TherapyTime_end = models.TimeField(null=True, blank=True)
-    reapointment_id=models.ForeignKey(clientPrebookAppointments, on_delete=models.CASCADE, null=True, blank=True)
     THIRTY_MINUTES = '30 minutes'
     ONE_HOUR = '1 hour'
     SESSION_TIME_CHOICES = [
@@ -284,6 +284,7 @@ class Appointment1(models.Model):
     lastUpdate=models.DateTimeField(null=True,blank=True)
     isTherapistChanged=models.BooleanField(default=False)
     therapistComments=models.TextField(null=True,blank=True)
+    reoccurAppointment=models.BooleanField(default=False)
 
     def __str__(self):
         return f"Appointment {self.pk}  --- {self.appointmentDate}"
@@ -301,6 +302,51 @@ class Appointment1(models.Model):
         managed = True
         verbose_name = 'Apointments'
         verbose_name_plural = 'Apointments'
+
+
+class ReoccureAppointments(models.Model):
+    clientData = models.ForeignKey(User_mobile, on_delete=models.CASCADE,null=True, blank=True)
+    childId = models.ForeignKey(Client_sub_view, on_delete=models.CASCADE, null=True, blank=True)
+    providerData = models.ForeignKey(Provider, on_delete=models.CASCADE, null=True, blank=True)
+    therapistData = models.ForeignKey(Therapist, on_delete=models.CASCADE, null=True, blank=True)
+    serviceData = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True)
+    locationData = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
+    appointmentDate = models.DateField(null=True, blank=True)
+    TherapyTime_start = models.TimeField(null=True, blank=True)
+    TherapyTime_end = models.TimeField(null=True, blank=True)
+    reoccurAppointmentDetail=models.ForeignKey(clientPrebookAppointments, on_delete=models.CASCADE, null=True, blank=True)
+    Location_details=models.CharField(max_length=250,null=True,blank=True)
+    STATUS_CHOICES = [
+        ('Reoccur', 'Reoccur'),
+        ('waiting','waiting')
+    ]
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+    )
+    isconfimed=models.BooleanField(default=False)
+    createdAt=models.DateTimeField(null=True,blank=True)
+    lastUpdate=models.DateTimeField(null=True,blank=True)
+    isTherapistChanged=models.BooleanField(default=False)
+    therapistComments=models.TextField(null=True,blank=True)
+
+    def __str__(self):
+        return f"Appointment {self.pk}  --- {self.appointmentDate}"
+
+    def clean(self):
+        pass
+
+    def save(self, *args, **kwargs):
+        if not self.createdAt:
+            self.createdAt = datetime.now() + timedelta(hours=5, minutes=30)
+        self.lastUpdate = datetime.now() + timedelta(hours=5, minutes=30)
+        super().save(*args, **kwargs)
+    
+    class Meta:
+        managed = True
+        verbose_name = 'reoccur Appointment'
+        verbose_name_plural = 'reoccur Appointment'
+
 
 
 

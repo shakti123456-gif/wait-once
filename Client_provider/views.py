@@ -1,6 +1,6 @@
 from mobile_api_user.authentication import JWTAuthentication
 from .models import Provider,Therapist,Service,therapist_service,Location,therapistAvailability,\
-    Appointment,Appointment1,clientPrebookAppointments
+    Appointment,Appointment1,clientPrebookAppointments,ReoccureAppointments
 from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,\
     AppointmentSerializer,AppointmentSerializerfetch,TherapistAvailSerializer ,RescheduleAppointmentSerializer,ServiceSerializerdetailAppointment
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from datetime import datetime, timedelta
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
+from dateutil.relativedelta import relativedelta
 
 
 class ProviderViewSet(viewsets.ModelViewSet):
@@ -99,14 +100,23 @@ class ProviderViewSet(viewsets.ModelViewSet):
 
     @action(detail=True,methods=['get'])
     def details_provider_therapist(self,request):
-        data_pd_id=request.headers.get("providerId","None")
-        therapist_pd_id=request.headers.get("therapistId","None")
-        if data_pd_id and therapist_pd_id:
+        providerId=request.headers.get("providerId",None)
+        therapistId=request.headers.get("therapistId",None)
+    
+        if not providerId or not therapistId:
             raise Exception("providerId  and TherapistId should present in headers")
         try:
-            provider_data=Provider.objects.filter(providerId=data_pd_id).first()
-            data = provider_data.get_therapist_services(therapist_pd_id)
+            provider_data=Provider.objects.filter(providerId=providerId).first()
+            data = provider_data.get_therapist_services(therapistId)
             service_serializer = ServiceSerializerdetail(data, many=True)
+            if not service_serializer.data:
+                response = {
+                'status': 'error',
+                'statusCode': 404,
+                'message': 'service data not found',
+                }
+                return Response(response, status=status.HTTP_404_NOT_FOUND)  
+
             response = {
                 'status': 'success',
                 'statusCode': 200,
@@ -252,6 +262,36 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 }
             }
         return Response(response_data, status=status.HTTP_200_OK)
+    
+    def providerTherapistServicer(self,request):
+        try:
+            providerId=request.headers.get('providerId',None)
+            therapistId=request.headers.get('therapistId',None)
+            provider_data=Provider.objects.get(providerId=providerId)
+            therapistId=Therapist.objects.get(therapist_id=therapistId)
+            
+            provider_data=provider_data.get_therapist_services(therapist_id=5)
+            
+            print(provider_data)
+
+
+            response_data = {
+                'status': 'success',
+                'statusCode': 200,
+                'message':'RequestSuccessfully' 
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        
+        except Exception as e :
+            response_data = {
+                'status': 'error',
+                'statusCode': 404,
+                'message':str(e) 
+            }
+            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
+
+
     @action(detail=True,methods=['get'])
     def therapist_availablity(self, request, pk=None):
         try:
@@ -828,8 +868,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     if current_date.weekday() == target_weekday:
                         specific_weekdays.append(current_date)
                     current_date += timedelta(days=1)
+            
+            elif appointmentType == "monthly":
+                while current_date <= end_date:
+                    specific_weekdays.append(current_date)
+                current_date += relativedelta(months=1)
+
             if not specific_weekdays:
-                raise Exception("we donot find any dates")    
+                raise Exception("we donot find any  dates")    
             providerDetails_data = Provider.objects.get(providerId=providerId)
             therapist_data = Therapist.objects.get(therapist_id=therapistId)
             location_data = Location.objects.get(location_id=locationId)
@@ -852,7 +898,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
             for date in specific_weekdays:
                 therapy_time_end = (datetime.combine(datetime.today(), therapy_time_start) + timedelta(minutes=30)).time()
-                appointment = Appointment1(
+                appointment = ReoccureAppointments(
                         clientData=request.user,
                         providerData=providerDetails_data,
                         therapistData=therapist_data,
@@ -863,15 +909,14 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         TherapyTime_end=therapy_time_end,
                         status='waiting',
                         isconfimed=False,
-                        reapointment_id=client_prebook
+                        reoccurAppointmentDetail=client_prebook
                     )
                 list_of_appointments.append(appointment)
-            print(list_of_appointments)
-            Appointment1.objects.bulk_create(list_of_appointments)
+            ReoccureAppointments.objects.bulk_create(list_of_appointments)
             response = {
                     'status': 'success',
                     'statusCode': 200,
-                    'message': 'Request successfully accepted, provider let us know'
+                    'message': 'Request successfully accepted, please wait provider let you know'
                 }
             return Response(response, status=status.HTTP_200_OK)
 
@@ -882,8 +927,13 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 'message': str(e),
             }
             return Response(response, status=status.HTTP_404_NOT_FOUND)
+    
+    def RecurringApointmentConflictCheck(self,requests):
+        try:
+            pass
 
-
+        except  Exception as e:
+            print(data=requests.data)
 
 
 

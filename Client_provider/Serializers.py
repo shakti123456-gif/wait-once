@@ -164,3 +164,31 @@ class ProviderEmployee(serializers.ModelSerializer):
         fields = ["employeeId", "usersName","password","userType"]
 
 
+
+class AppointmentSerializerBooking(serializers.Serializer):
+    therapist = serializers.IntegerField()
+    service = serializers.IntegerField()
+    appointmentDate = serializers.DateField()
+    therapyTimeStart = serializers.TimeField()
+    sessionTime = serializers.DurationField()
+    locationId = serializers.IntegerField()
+
+    def validate(self, data):
+        print(data)
+        therapist_id = data.get('therapistId')
+        service_id = data.get('serviceId')
+        provider_id = self.context.get('providerId')
+
+        try:
+            therapist = Therapist.objects.get(id=therapist_id, provider_id=provider_id)
+        except Therapist.DoesNotExist:
+            raise serializers.ValidationError("Therapist does not belong to the specified provider.")
+
+        try:
+            service = Service.objects.get(id=service_id, provider_id=provider_id)
+        except Service.DoesNotExist:
+            raise serializers.ValidationError("Service does not belong to the specified provider.")
+
+        return data
+
+
