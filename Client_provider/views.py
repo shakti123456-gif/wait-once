@@ -758,10 +758,10 @@ class Client_booking_Details(viewsets.ModelViewSet):
             dataService=Service.objects.filter(service_id__in=serviceDataId)
             serviceSerializer=ServiceSerializerdetailAppointment(dataService,many=True)
             response = {
-                            'status': 'success',
-                            'statusCode': 200,
-                            'message': 'request Successfull',
-                            'data':serviceSerializer.data
+                        'status': 'success',
+                        'statusCode': 200,
+                        'message': 'request Successfull',
+                        'data':serviceSerializer.data
                     }     
                     
             return Response(response, status=status.HTTP_200_OK)
@@ -857,6 +857,15 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         therapySlot=therapyTimeStart
                     )
                 client_prebook.save()
+            else:
+                response = {
+                    'status': 'Error',
+                    'statusCode': 404,
+                    'message': 'data not found',
+                    'data': Serializer.errors
+                }
+                return Response(response, status=status.HTTP_404_NOT_FOUND)
+                
             # list_of_appointments = []
             # therapy_time_start = datetime.strptime(therapyTimeStart, "%H:%M:%S").time()
 

@@ -200,4 +200,4 @@ class Client_details_view(Baseclass):
 
 @receiver(pre_save, sender=User_mobile)
 def create_profile(sender, instance, **kwargs):
-    print("value")
+    pass
