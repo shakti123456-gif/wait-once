@@ -14,7 +14,7 @@ class Client_Details(admin.ModelAdmin):
               'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
     
 class User_Details(admin.ModelAdmin):
-    list_display = ('firstName', 'lastName', 'mobileNumber','email')
+    list_display = ('firstName', 'lastName', 'mobileNumber','fireBaseKey')
     # list_filter =  ('author', 'is_published', 'published_date')
     # search_fields = ('title', 'author_name')
    

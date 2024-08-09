@@ -426,12 +426,13 @@ class Client_booking_Details(viewsets.ModelViewSet):
             data=request.data
             therapist_avail=data.get("therapist",None)
             date_appointment=data.get("appointmentDate",None)
-            childDetail=data.get("childId",None)
+            childDetail=data.get("children",None)
             therapy_time_start = data.get("therapyTimeStart",None)
             providerDetail=data.get("provider",None)
             service_id=data.get("service",None)
             session_time=data.get("sessionTime",None)
             LocationId=data.get("LocationId",None)
+
             try:
                 date_appointment = datetime.strptime(date_appointment, '%d-%m-%Y').strftime('%Y-%m-%d')
             except:
@@ -462,7 +463,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
                         if appointments:
                             for appoint in appointments:
-                                if appoint.clientData.userId==request.user.userId:
+                                if appoint.clientData.userId==request.user.userId and not childDetail:
                                     response = {
                                         'status': 'error',
                                         'statusCode': 404,
@@ -861,7 +862,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 response = {
                     'status': 'Error',
                     'statusCode': 404,
-                    'message': 'data not found',
+                    'message': 'Bad request',
                     'data': Serializer.errors
                 }
                 return Response(response, status=status.HTTP_404_NOT_FOUND)

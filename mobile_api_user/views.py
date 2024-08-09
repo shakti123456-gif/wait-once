@@ -257,11 +257,11 @@ class UserUpdateView(APIView):
         try:
             user_name=request.data.get("username")
             password=request.data.get("newpassword")
-            firebase_key=request.data.get("firebaseKey")
+            fireBaseKey=request.data.get("fireBaseKey")
             user_stat = User_mobile.objects.filter(
-                            (Q(mobileNumber=str(user_name)) | Q(email=str(user_name)))
-                        ).first()
-            
+                    Q(mobileNumber=str(user_name)) | 
+                    (Q(email=str(user_name)))
+                ).first()
             if not user_stat:
                 response = {
                 'status': 'error',
@@ -270,13 +270,13 @@ class UserUpdateView(APIView):
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             
-            # if user_stat.firebaseKey==firebase_key and not user_stat.firebaseKey:
-            #     response = {
-            #     'status': 'error',
-            #     'statusCode': 400,
-            #     'message': 'firebase key not matched',
-            #     }
-            #     return Response(response, status=status.HTTP_400_BAD_REQUEST)
+            if not user_stat.fireBaseKey==fireBaseKey:
+                response = {
+                'status': 'error',
+                'statusCode': 400,
+                'message': 'firebase key not matched',
+                }
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
             user_stat.password=password
             user_stat.save()
@@ -291,11 +291,11 @@ class UserUpdateView(APIView):
             response = {
                 'status': 'error',
                 'statusCode': 400,
-                'message': 'Internal server error occured',
+                'message': str(e),
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
         
-    
+
 class ChildrenListView(generics.ListAPIView):
     authentication_classes=[JWTAuthentication]
     permission_classes = [IsAuthenticated]

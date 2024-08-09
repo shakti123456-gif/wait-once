@@ -70,7 +70,7 @@ class User_mobile(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     createdAt = models.DateTimeField(null=True,blank=True)
     lastUpdate = models.DateTimeField(null=True,blank=True)
-    firebaseKey=models.CharField(max_length=100,null=True,blank=True)
+    fireBaseKey=models.CharField(max_length=100,null=True,blank=True)
     password=models.CharField(max_length=15,verbose_name="Password")
     insuranceType=models.CharField(max_length=25,null=True,blank=True)
     objects = UserManager()
