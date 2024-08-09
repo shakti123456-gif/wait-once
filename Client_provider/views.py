@@ -463,7 +463,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
 
                         if appointments:
                             for appoint in appointments:
-                                if appoint.clientData.userId==request.user.userId and not childDetail:
+                                if appoint.clientData.userId==request.user.userId or  childDetail:
                                     response = {
                                         'status': 'error',
                                         'statusCode': 404,
@@ -819,34 +819,34 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 specific_weekdays = []
                 current_date=startDate
                 end_date=endDate
-                if appointmentType == "daily":
+                if str(appointmentType).lower() == "daily":
                     while current_date <= end_date:
                         specific_weekdays.append(current_date)
                         current_date += timedelta(days=1)
 
-                elif appointmentType == "fortnightly":
+                elif str(appointmentType).lower() == "fortnightly":
                     while current_date <= end_date:
                         specific_weekdays.append(current_date)
                         current_date += timedelta(weeks=2)
             
-                elif appointmentType == "weekly":
+                elif str(appointmentType).lower() == "weekly":
                     target_weekday = current_date.weekday()
                     while current_date <= end_date:
                         if current_date.weekday() == target_weekday:
                             specific_weekdays.append(current_date)
                         current_date += timedelta(days=1)
                 
-                elif appointmentType == "monthly":
+                elif str(appointmentType).lower() == "monthly":
                     while current_date <= end_date:
                         specific_weekdays.append(current_date)
-                    current_date += relativedelta(months=1)
+                        current_date += relativedelta(months=1)
                 if not specific_weekdays:
                     raise Exception("we donot find any  dates")    
                 providerDetails_data = Provider.objects.get(providerId=providerId)
                 therapist_data = Therapist.objects.get(therapist_id=therapistId)
                 location_data = Location.objects.get(location_id=locationId)
                 service_data = Service.objects.get(service_id=serviceId)
-                client_prebook = clientPrebookAppointments(
+                person, created = clientPrebookAppointments.objects.get_or_create(
                         clientDetail=request.user,
                         therapistDetails=therapist_data,
                         providerDetails=providerDetails_data,
@@ -857,7 +857,8 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         appointmentType=appointmentType,
                         therapySlot=therapyTimeStart
                     )
-                client_prebook.save()
+                if person and not created:
+                    raise Exception("we already accept your request")
             else:
                 response = {
                     'status': 'Error',

@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 from .models import Provider,Therapist,Location,Service,Therapist_working_time ,\
-    Therapist_unavailability ,Appointment1,Appointment,Provider_employee
+    Therapist_unavailability ,Appointment1,Appointment,Provider_employee,ReoccureAppointments
 from mobile_api_user.Serializer import UserMobileSerializerfetchdata
 from  datetime  import datetime 
 
@@ -192,8 +192,13 @@ class reoccureAppointment(serializers.Serializer):
     serviceId = serializers.IntegerField(required=True)
     therapyTimeStart = serializers.TimeField(required=True, format='%H:%M:%S')
     locationId = serializers.IntegerField(required=True)
+    APPOINTMENT_TYPE_CHOICES = [
+        ('monthly', 'Monthly'),
+        ('weekly', 'Weekly'),
+        ('fortnightly', 'Fortnightly'),
+        ('daily', 'Daily'),
+    ]
     appointmentType = serializers.CharField(required=True)
-
     def validate(self, data):
         try:
             data['startDate'] = datetime.strptime(data['startDate'], '%d-%m-%Y')
@@ -201,3 +206,13 @@ class reoccureAppointment(serializers.Serializer):
         except ValueError:
             raise serializers.ValidationError("Date format should be DD-MM-YYYY")
         return data
+        appointmentType = serializers.CharField(required=True)
+
+    def validate_appointmentType(self, value):
+        normalized_value = value.lower()
+        allowed_choices = [choice[0] for choice in self.APPOINTMENT_TYPE_CHOICES]
+
+        if normalized_value not in allowed_choices:
+            raise serializers.ValidationError("Invalid appointment type. Valid options are: Monthly, Weekly, Fortnightly, Daily.")
+        
+        return normalized_value
