@@ -2,7 +2,9 @@ from mobile_api_user.authentication import JWTAuthentication
 from .models import Provider,Therapist,Service,therapist_service,Location,therapistAvailability,\
     Appointment,Appointment1,clientPrebookAppointments,ReoccureAppointments
 from .Serializers import ProviderSerializer,therapistSerializer,ProviderSerializerdetail,LocationSerializerdetail,ServiceSerializerdetail,\
-    AppointmentSerializer,AppointmentSerializerfetch,TherapistAvailSerializer ,RescheduleAppointmentSerializer,ServiceSerializerdetailAppointment
+    AppointmentSerializer,AppointmentSerializerfetch,TherapistAvailSerializer ,RescheduleAppointmentSerializer,ServiceSerializerdetailAppointment,\
+    reoccureAppointment
+    
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, viewsets
@@ -216,7 +218,7 @@ class TherapistViewSet(viewsets.ModelViewSet):
             data_therapist=therapist_service.objects.filter(Therapist_Name=queryset)
             details_service=[e.service_Name.service_id for e in data_therapist]
             service_data=Service.objects.filter(service_id__in=details_service)
-            providers_data = Provider.objects.filter(therapistServicemap__in=data_therapist)
+            providers_data = Provider.objects.filter(therapistServicemap__in=data_therapist).distinct()
 
             data={
                 "TherapistData":queryset,
@@ -251,7 +253,6 @@ class TherapistViewSet(viewsets.ModelViewSet):
         therapist_data_serializer = therapistSerializer(data.get("TherapistData", None))
         provider_data_serializer = ProviderSerializer(data.get("providers", None), many=True)
 
-        
         response_data = {
                 'status': 'success',
                 'statusCode': 200,
@@ -262,57 +263,29 @@ class TherapistViewSet(viewsets.ModelViewSet):
                 }
             }
         return Response(response_data, status=status.HTTP_200_OK)
-    
-    def providerTherapistServicer(self,request):
-        try:
-            providerId=request.headers.get('providerId',None)
-            therapistId=request.headers.get('therapistId',None)
-            provider_data=Provider.objects.get(providerId=providerId)
-            therapistId=Therapist.objects.get(therapist_id=therapistId)
-            
-            provider_data=provider_data.get_therapist_services(therapist_id=5)
-            
-            print(provider_data)
-
-
-            response_data = {
-                'status': 'success',
-                'statusCode': 200,
-                'message':'RequestSuccessfully' 
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
-            
-        
-        except Exception as e :
-            response_data = {
-                'status': 'error',
-                'statusCode': 404,
-                'message':str(e) 
-            }
-            return Response(response_data, status=status.HTTP_404_NOT_FOUND)
 
 
     @action(detail=True,methods=['get'])
     def therapist_availablity(self, request, pk=None):
         try:
-            availablityDate1=request.headers.get("availablityDate","None")
+            availablityDate1=request.headers.get("availablityDate",None)
             data1={
                 "availablityDate":availablityDate1
             }
             serializer = TherapistAvailSerializer(data=data1)
             if serializer.is_valid():
                 data_avail = serializer.validated_data.get("availablityDate")
-                therapistId=request.headers.get("therapistId","None")
+                therapistId=request.headers.get("therapistId",None)
+                providerId=request.headers.get("providerId",None)
                 if therapistId:
-                    therapist_data = therapistAvailability.objects.get(therapist_id__therapist_id=therapistId,date=data_avail)
+                    therapist_data = therapistAvailability.objects.get(therapist_id__therapist_id=therapistId,date=data_avail,Provider__providerId=providerId)
                 else:
                     response_data = {
-                    'status': 'error',
-                    'statusCode': 404,
-                    'message': "provide therapistId in headers"
+                        'status': 'error',
+                        'statusCode': 404,
+                        'message': "provide therapistId in headers"
                     }
                     return Response(response_data, status=status.HTTP_404_NOT_FOUND)
-                
                 slots = therapist_data.available_slots
                 data_objects=Appointment1.objects.filter(appointmentDate=data_avail).all()
                 booked_slots = []
@@ -377,8 +350,6 @@ class TherapistViewSet(viewsets.ModelViewSet):
             return Response(response_data, status=status.HTTP_404_NOT_FOUND)
         
 
-
-
 class Client_booking_Details(viewsets.ModelViewSet):
     serializer_class = AppointmentSerializer
     authentication_classes=[JWTAuthentication]
@@ -412,12 +383,10 @@ class Client_booking_Details(viewsets.ModelViewSet):
             therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
                                                                       date=date_appointment,Provider__providerId=providerDetail).all()
             
-            # error
-
             if therapist_avail_date:
                 appointments = Appointment.objects.filter(
                         appointmentDate=date_appointment, 
-                        therapistId=therapist_avail_date.therapist_id.therapist_id,isconfimed=True)
+                        therapistId=therapist_avail_date.therapist_id.therapist_id,isConfirmed=True)
                 for apointment in appointments:
                     appointment_start = timedelta(hours=apointment.TherapyTime_start.hour, minutes=apointment.TherapyTime_start.minute)
                     appointment_end = timedelta(hours=apointment.TherapyTime_end.hour, minutes=apointment.TherapyTime_end.minute)
@@ -445,7 +414,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                 TherapyTime_end=therapy_time_end,
                 Location_details=data.get("Location_details"),
                 status="confirmed",
-                isconfimed=True
+                isConfirmed=True
             )
             new_appointment.save()
         
@@ -457,21 +426,20 @@ class Client_booking_Details(viewsets.ModelViewSet):
             data=request.data
             therapist_avail=data.get("therapist",None)
             date_appointment=data.get("appointmentDate",None)
+            childDetail=data.get("childId",None)
             therapy_time_start = data.get("therapyTimeStart",None)
-            providerDetail=data.get("provider")
-            service_id=data.get("service")
-            session_time=data.get("sessionTime","")
-            LocationId=data.get("LocationId")
+            providerDetail=data.get("provider",None)
+            service_id=data.get("service",None)
+            session_time=data.get("sessionTime",None)
+            LocationId=data.get("LocationId",None)
             try:
                 date_appointment = datetime.strptime(date_appointment, '%d-%m-%Y').strftime('%Y-%m-%d')
             except:
                 return JsonResponse({"error": "please enter format day/month/year"}, status=400)
-            
             try:
                 therapy_time_start = datetime.strptime(therapy_time_start, "%H:%M:%S").time()
             except ValueError:
                 return JsonResponse({"error": "Invalid time format for TherapyTime_start"}, status=400)
-           
             
             if therapist_avail:
                 therapist_avail_date=therapistAvailability.objects.filter(therapist_id__therapist_id=therapist_avail,
@@ -514,14 +482,13 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     response = {
                         'status': 'error',
                         'statusCode': 400,
-                        'message': 'Therapist Data not found',
+                        'message': 'Therapist Data not found with particular provider or therapist time is not updated',
                     }        
                     return Response(response, status=status.HTTP_404_NOT_FOUND)
                     
                 provider=Provider.objects.filter(providerId=providerDetail).first()
                 service=Service.objects.filter(service_id=service_id).first()
                 location=Location.objects.filter(location_id=LocationId).first()
-
                 new_appointment = Appointment1(
                     clientData=request.user,
                     providerData=provider,
@@ -532,7 +499,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     TherapyTime_end=timeslot2,
                     locationData=location,
                     status=status_check,
-                    isconfimed = True if status_check == "confirmed" else False
+                    isConfirmed = True if status_check == "confirmed" else False
                 )
                 new_appointment.save()
                 if status_check=="confirmed":
@@ -547,7 +514,6 @@ class Client_booking_Details(viewsets.ModelViewSet):
                         'statusCode': 200,
                         'message':"Your Appointment is in waiting list"
                     }
-
                 return Response(response_data, status=status.HTTP_200_OK)
         except Exception as e:
             response_data = {
@@ -574,7 +540,7 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     if appointment_second_record.count() >1:
                         second_record = appointment_second_record[1]
                         second_record.status = "confirmed"
-                        second_record.isconfimed = True
+                        second_record.isConfirmed = True
                         second_record.save()
                 appointment.delete()
                 response = {
@@ -730,12 +696,12 @@ class Client_booking_Details(viewsets.ModelViewSet):
                     if resheduletime :
                         appointments = Appointment1.objects.filter(
                             appointmentDate=reschedule_date, 
-                            therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=therapy_time_start)
+                            therapistData=therapist_avail_date.therapist_id,isConfirmed=True,TherapyTime_start=therapy_time_start)
 
                     else: 
                         appointments = Appointment1.objects.filter(
                         appointmentDate=reschedule_date, 
-                        therapistData=therapist_avail_date.therapist_id,isconfimed=True,TherapyTime_start=appointment.TherapyTime_start)
+                        therapistData=therapist_avail_date.therapist_id,isConfirmed=True,TherapyTime_start=appointment.TherapyTime_start)
                 else:
                     response = {
                         'status': 'error',
@@ -838,81 +804,79 @@ class Client_booking_Details(viewsets.ModelViewSet):
     @action(detail=True,methods=['post'])
     def reoccurAppointment(self,request):
         try:
-            data = request.data
-            therapistId = data.get("therapistId", None)
-            startDate = data.get("startDate", None)
-            endDate = data.get("endDate", None)
-            providerId = data.get("providerId", None)
-            serviceId = data.get("serviceId", None)
-            therapyTimeStart = data.get("therapyTimeStart", None)
-            locationId = data.get("locationId", None)
-            appointmentType = data.get("appointmentType", None)
-            specific_weekdays = []
-            start_date = datetime.strptime(startDate, '%d-%m-%Y')
-            end_date = datetime.strptime(endDate, '%d-%m-%Y')
-            current_date=start_date
-            if appointmentType == "daily":
-                while current_date <= end_date:
-                    specific_weekdays.append(current_date)
-                    current_date += timedelta(days=1)
-
-            elif appointmentType == "fortnightly":
-                while current_date <= end_date:
-                    specific_weekdays.append(current_date)
-                    current_date += timedelta(weeks=2)
-        
-            elif appointmentType == "weekly":
-                current_date = start_date
-                target_weekday = current_date.weekday()
-                while current_date <= end_date:
-                    if current_date.weekday() == target_weekday:
+            Serializer=reoccureAppointment(data=request.data)
+            if Serializer.is_valid():
+                validated_data = Serializer.validated_data
+                therapistId = validated_data.get("therapistId", None)
+                startDate = validated_data.get("startDate", None)
+                endDate = validated_data.get("endDate", None)
+                providerId = validated_data.get("providerId", None)
+                serviceId = validated_data.get("serviceId", None)
+                therapyTimeStart = validated_data.get("therapyTimeStart", None)
+                locationId = validated_data.get("locationId", None)
+                appointmentType = validated_data.get("appointmentType", None)
+                specific_weekdays = []
+                current_date=startDate
+                end_date=endDate
+                if appointmentType == "daily":
+                    while current_date <= end_date:
                         specific_weekdays.append(current_date)
-                    current_date += timedelta(days=1)
+                        current_date += timedelta(days=1)
+
+                elif appointmentType == "fortnightly":
+                    while current_date <= end_date:
+                        specific_weekdays.append(current_date)
+                        current_date += timedelta(weeks=2)
             
-            elif appointmentType == "monthly":
-                while current_date <= end_date:
-                    specific_weekdays.append(current_date)
-                current_date += relativedelta(months=1)
-
-            if not specific_weekdays:
-                raise Exception("we donot find any  dates")    
-            providerDetails_data = Provider.objects.get(providerId=providerId)
-            therapist_data = Therapist.objects.get(therapist_id=therapistId)
-            location_data = Location.objects.get(location_id=locationId)
-            service_data = Service.objects.get(service_id=serviceId)
-            startDate = datetime.strptime(startDate, "%d-%m-%Y").date()
-            endDate = datetime.strptime(endDate, "%d-%m-%Y").date()
-            client_prebook = clientPrebookAppointments(
-                    clientDetail=request.user,
-                    therapistDetails=therapist_data,
-                    providerDetails=providerDetails_data,
-                    serviceData=service_data,
-                    startdate=startDate,
-                    endDate=endDate,
-                    locationData=location_data,
-                    appointmentType=appointmentType
-                )
-            client_prebook.save()
-            list_of_appointments = []
-            therapy_time_start = datetime.strptime(therapyTimeStart, "%H:%M:%S").time()
-
-            for date in specific_weekdays:
-                therapy_time_end = (datetime.combine(datetime.today(), therapy_time_start) + timedelta(minutes=30)).time()
-                appointment = ReoccureAppointments(
-                        clientData=request.user,
-                        providerData=providerDetails_data,
-                        therapistData=therapist_data,
+                elif appointmentType == "weekly":
+                    target_weekday = current_date.weekday()
+                    while current_date <= end_date:
+                        if current_date.weekday() == target_weekday:
+                            specific_weekdays.append(current_date)
+                        current_date += timedelta(days=1)
+                
+                elif appointmentType == "monthly":
+                    while current_date <= end_date:
+                        specific_weekdays.append(current_date)
+                    current_date += relativedelta(months=1)
+                if not specific_weekdays:
+                    raise Exception("we donot find any  dates")    
+                providerDetails_data = Provider.objects.get(providerId=providerId)
+                therapist_data = Therapist.objects.get(therapist_id=therapistId)
+                location_data = Location.objects.get(location_id=locationId)
+                service_data = Service.objects.get(service_id=serviceId)
+                client_prebook = clientPrebookAppointments(
+                        clientDetail=request.user,
+                        therapistDetails=therapist_data,
+                        providerDetails=providerDetails_data,
                         serviceData=service_data,
-                        appointmentDate=date,
+                        startdate=startDate,
+                        endDate=endDate,
                         locationData=location_data,
-                        TherapyTime_start=therapy_time_start,
-                        TherapyTime_end=therapy_time_end,
-                        status='waiting',
-                        isconfimed=False,
-                        reoccurAppointmentDetail=client_prebook
+                        appointmentType=appointmentType,
+                        therapySlot=therapyTimeStart
                     )
-                list_of_appointments.append(appointment)
-            ReoccureAppointments.objects.bulk_create(list_of_appointments)
+                client_prebook.save()
+            # list_of_appointments = []
+            # therapy_time_start = datetime.strptime(therapyTimeStart, "%H:%M:%S").time()
+
+            # for date in specific_weekdays:
+            #     therapy_time_end = (datetime.combine(datetime.today(), therapy_time_start) + timedelta(minutes=30)).time()
+            #     appointment = ReoccureAppointments(
+            #             clientData=request.user,
+            #             providerData=providerDetails_data,
+            #             therapistData=therapist_data,
+            #             serviceData=service_data,
+            #             appointmentDate=date,
+            #             locationData=location_data,
+            #             TherapyTime_start=therapy_time_start,
+            #             TherapyTime_end=therapy_time_end,
+            #             status='waiting',
+            #             isconfimed=False,
+            #             reoccurAppointmentDetail=client_prebook
+            #         )
+            #     list_of_appointments.append(appointment)
+            # ReoccureAppointments.objects.bulk_create(list_of_appointments)
             response = {
                     'status': 'success',
                     'statusCode': 200,
@@ -928,12 +892,41 @@ class Client_booking_Details(viewsets.ModelViewSet):
             }
             return Response(response, status=status.HTTP_404_NOT_FOUND)
     
-    def RecurringApointmentConflictCheck(self,requests):
+    def RecurringApointmentConflictCheck(self,request):
         try:
-            pass
+            id=request.headers.get("id",None)
+            data=clientPrebookAppointments.objects.filter(clientPreId=id,clientDetail=request.user).first()
+            Appointment1_data_check=Appointment1.objects.all()
+            therapistavail_data =therapistAvailability.objects.all()
+            specific_weekdays = []
+            current_date=data.startDate
+            end_date=startDate
+            if appointmentType == "daily":
+                while current_date <= end_date:
+                    specific_weekdays.append(current_date)
+                    current_date += timedelta(days=1)
+
+            elif appointmentType == "fortnightly":
+                while current_date <= end_date:
+                        specific_weekdays.append(current_date)
+                        current_date += timedelta(weeks=2)
+            
+            elif appointmentType == "weekly":
+                target_weekday = current_date.weekday()
+                while current_date <= end_date:
+                    if current_date.weekday() == target_weekday:
+                        specific_weekdays.append(current_date)
+                        current_date += timedelta(days=1)
+                
+            elif appointmentType == "monthly":
+                while current_date <= end_date:
+                    specific_weekdays.append(current_date)
+                    current_date += relativedelta(months=1)
+            if not specific_weekdays:
+                raise Exception("we donot find any  dates")    
 
         except  Exception as e:
-            print(data=requests.data)
+            print(e)
 
 
 

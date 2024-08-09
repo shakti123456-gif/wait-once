@@ -133,7 +133,6 @@ class UserRegistrationView(generics.CreateAPIView):
                 }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-    
 
 class Fetch_and_update_user(APIView):
     authentication_classes=[JWTAuthentication]

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Provider,Therapist,Location,Service,Therapist_working_time ,\
     Therapist_unavailability ,Appointment1,Appointment,Provider_employee
 from mobile_api_user.Serializer import UserMobileSerializerfetchdata
+from  datetime  import datetime 
 
 class ProviderSerializer(serializers.ModelSerializer):
     contactInfo = serializers.EmailField(source='email')
@@ -76,7 +77,7 @@ class ProviderSerializerdetail(serializers.ModelSerializer):
 
     class Meta:
         model = Provider
-        fields = ['providerName','providerNum','providerType','email','ndisNumber',
+        fields = ['providerId','providerName','providerNum','providerType','email','ndisNumber',
               'abn','ageGroup','web','chain','dva',
               'alternativeMobileNumber','permanentAddress1','permanentAddress2','city',
               'state','pin','additionalInfo1','additionalInfo2','additionalInfo3','additionalInfo4']
@@ -106,8 +107,6 @@ class AppointmentSerializer1(serializers.ModelSerializer):
         model = Appointment
         # fields = ['clientData','childId','providerData','therapistData','serviceData','LocationData','appointmentDate','TherapyTime_start','TherapyTime_end','Location_details','status','isconfimed'
 
-
-
 class AppointmentSerializer(serializers.Serializer):
     appointmentId = serializers.IntegerField()
 
@@ -126,11 +125,10 @@ class AppointmentSerializerfetch(serializers.ModelSerializer):
     locationData = LocationSerializerdetail(read_only=True)
     therapyStartTime = serializers.TimeField(source='TherapyTime_start', read_only=True)
     therapyEndTime = serializers.TimeField(source='TherapyTime_end', read_only=True)
-    isConfimed = serializers.BooleanField(source='isconfimed', read_only=True)
 
     class Meta:
         model = Appointment1
-        fields = ['appointmentId','clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapyStartTime','therapyEndTime','status','isConfimed','isTherapistChanged','therapistComments']
+        fields = ['appointmentId','clientData','providerData','therapistData','serviceData','locationData','appointmentDate','therapyStartTime','therapyEndTime','status','isConfirmed','isTherapistChanged','therapistComments']
 
 
 class TherapistAvailSerializer(serializers.Serializer):
@@ -163,8 +161,6 @@ class ProviderEmployee(serializers.ModelSerializer):
         model = Provider_employee
         fields = ["employeeId", "usersName","password","userType"]
 
-
-
 class AppointmentSerializerBooking(serializers.Serializer):
     therapist = serializers.IntegerField()
     service = serializers.IntegerField()
@@ -174,11 +170,9 @@ class AppointmentSerializerBooking(serializers.Serializer):
     locationId = serializers.IntegerField()
 
     def validate(self, data):
-        print(data)
         therapist_id = data.get('therapistId')
         service_id = data.get('serviceId')
         provider_id = self.context.get('providerId')
-
         try:
             therapist = Therapist.objects.get(id=therapist_id, provider_id=provider_id)
         except Therapist.DoesNotExist:
@@ -188,7 +182,22 @@ class AppointmentSerializerBooking(serializers.Serializer):
             service = Service.objects.get(id=service_id, provider_id=provider_id)
         except Service.DoesNotExist:
             raise serializers.ValidationError("Service does not belong to the specified provider.")
-
         return data
 
+class reoccureAppointment(serializers.Serializer):
+    therapistId = serializers.IntegerField(required=True)
+    startDate = serializers.CharField(required=True)
+    endDate = serializers.CharField(required=True)
+    providerId = serializers.IntegerField(required=True)
+    serviceId = serializers.IntegerField(required=True)
+    therapyTimeStart = serializers.TimeField(required=True, format='%H:%M:%S')
+    locationId = serializers.IntegerField(required=True)
+    appointmentType = serializers.CharField(required=True)
 
+    def validate(self, data):
+        try:
+            data['startDate'] = datetime.strptime(data['startDate'], '%d-%m-%Y')
+            data['endDate'] = datetime.strptime(data['endDate'], '%d-%m-%Y')
+        except ValueError:
+            raise serializers.ValidationError("Date format should be DD-MM-YYYY")
+        return data

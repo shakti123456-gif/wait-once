@@ -193,7 +193,7 @@ class Appointment(models.Model):
         choices=STATUS_CHOICES,
         default=WAITING,
     )
-    isconfimed=models.BooleanField(default=False)
+    isConfirmed=models.BooleanField(default=False)
 
 
     def __str__(self):
@@ -220,7 +220,7 @@ class clientPrebookAppointments(models.Model):
     startdate = models.DateField(null=True,blank=True)
     endDate = models.DateField(null=True,blank=True)
     locationData = models.ForeignKey(Location, on_delete=models.CASCADE,null=True,blank=True)
-    
+    therapySlot=models.TimeField(null=True,blank=True)
     WEEKLY = 'weekly'
     DAILY = 'daily'
     FORTNIGHTLY = 'fortnight'
@@ -279,7 +279,7 @@ class Appointment1(models.Model):
         choices=STATUS_CHOICES,
         default=WAITING,
     )
-    isconfimed=models.BooleanField(default=False)
+    isConfirmed=models.BooleanField(default=False)
     createdAt=models.DateTimeField(null=True,blank=True)
     lastUpdate=models.DateTimeField(null=True,blank=True)
     isTherapistChanged=models.BooleanField(default=False)
@@ -324,7 +324,7 @@ class ReoccureAppointments(models.Model):
         max_length=10,
         choices=STATUS_CHOICES,
     )
-    isconfimed=models.BooleanField(default=False)
+    isConfirmed=models.BooleanField(default=False)
     createdAt=models.DateTimeField(null=True,blank=True)
     lastUpdate=models.DateTimeField(null=True,blank=True)
     isTherapistChanged=models.BooleanField(default=False)
