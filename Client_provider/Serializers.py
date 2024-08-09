@@ -206,7 +206,6 @@ class reoccureAppointment(serializers.Serializer):
         except ValueError:
             raise serializers.ValidationError("Date format should be DD-MM-YYYY")
         return data
-        appointmentType = serializers.CharField(required=True)
 
     def validate_appointmentType(self, value):
         normalized_value = value.lower()
